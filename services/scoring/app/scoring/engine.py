@@ -57,22 +57,6 @@ CATEGORICAL_MATCH: dict[str, dict[str, dict[str, float]]] = {
 
 CONTINUOUS_ITEMS = {"tone_warmth", "natural_light", "condition", "curb_appeal", "ceiling_height"}
 
-ITEM_CATEGORY: dict[str, str] = {
-    "tone_warmth": "warmth",
-    "fireplace": "warmth",
-    "flooring": "finish",
-    "counters": "finish",
-    "cabinets": "finish",
-    "appliances": "finish",
-    "natural_light": "finish",
-    "condition": "finish",
-    "ceiling_height": "bones",
-    "curb_appeal": "outdoor",
-    "exterior_style": "outdoor",
-    "lot_character": "outdoor",
-    "deck_patio": "outdoor",
-}
-
 CATEGORY_BUDGETS: dict[str, float] = {
     "bones": 25.0,
     "warmth": 20.0,
