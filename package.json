@@ -1,0 +1,12 @@
+{
+  "name": "houseflavor",
+  "private": true,
+  "version": "0.0.1",
+  "workspaces": [
+    "apps/web",
+    "packages/contracts"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}
