@@ -57,12 +57,12 @@ Do not leave forward-looking language in docs after the thing has been built.
 
 ## Git
 
+- **Work off `main`** - commit and push changes directly to `main`.
 - **Never commit with `--no-verify`** - if a hook fails, fix the underlying issue.
 - **Never force-push `main`**.
-- **Never commit directly to `main`** - always use a feature branch.
 - **One logical change per commit** - don't bundle unrelated fixes.
 - **Always run tests immediately before committing**.
-- **After any set of changes**: commit and push to the designated branch.
+- **After any set of changes**: commit and push to `main`.
 
 ## FastAPI patterns
 
