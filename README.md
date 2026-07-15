@@ -63,12 +63,16 @@ npm test --workspace=apps/web
 
 ## Phase status
 
-| Phase | Status | Description |
-|---|---|---|
-| A | ⏳ | Quiz -> Rubric (client-side inference, anonymous persistence) |
-| B | ⏳ | Gates + accounts + anonymous->account rubric merge |
-| C | ⏳ | Scoring service (parse, analyze, score endpoints) |
-| D | ⏳ | Persistence + comparison view |
+Detailed, actionable plans for each phase live in [docs/plans/](docs/plans/README.md).
+
+| Phase | Status | Description | Plan |
+|---|---|---|---|
+| A | ⏳ | Quiz -> Rubric (client-side inference, anonymous persistence) | [phase-a](docs/plans/phase-a-quiz-rubric.md) |
+| B | ⏳ | Gates + accounts + anonymous->account rubric merge | [phase-b](docs/plans/phase-b-gates-accounts.md) |
+| C | ⏳ | Scoring service (parse, analyze, score endpoints) | [phase-c](docs/plans/phase-c-scoring-service.md) |
+| D | ⏳ | Persistence + comparison view | [phase-d](docs/plans/phase-d-persistence-comparison.md) |
+
+Preference neutrality is a cross-cutting hard requirement spanning phases A and C: see [docs/plans/preference-neutrality.md](docs/plans/preference-neutrality.md).
 
 ## Scoring service endpoints
 
