@@ -9,6 +9,10 @@ They optionally complete a gates step (budget, district, beds/baths) that adds h
 They paste listing URLs; the scoring service fetches the page, extracts photos, sends them to Claude vision (preference-neutral JSON observations), then applies the rubric via deterministic match x weight math to produce a 0-100 score, verdict, and due-diligence checklist.
 The same listing scores differently for different users - that is the product.
 
+## Documentation
+
+Full documentation lives in [docs/](docs/README.md): [architecture](docs/architecture.md) (with diagrams), the [scoring contract](docs/scoring-contract.md), the [roadmap](docs/roadmap.md), the [decision log](docs/decisions.md), and the [phase plans](docs/plans/README.md).
+
 ## Monorepo layout
 
 ```
