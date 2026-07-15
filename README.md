@@ -77,7 +77,7 @@ Detailed, actionable plans for each phase live in [docs/plans/](docs/plans/READM
 |---|---|---|---|
 | A | 🔨 | Quiz -> Rubric (client-side inference, anonymous persistence). Core built with SVG stand-in plates; curated photo bank still pending. | [phase-a](docs/plans/phase-a-quiz-rubric.md) |
 | B | 🔨 | Gates + anonymous persistence + merge. Gates form, rubric merge (compose, don't clobber), and versioned server-side persistence keyed by an anonymous id are done. Optional magic-link account claim is deferred by design. | [phase-b](docs/plans/phase-b-gates-accounts.md) |
-| C | 🔨 | Scoring service. Deterministic core done (config-driven engine, personalized weights, parse, analyze cache seam); live Claude vision pending `scoring-contract.md`. | [phase-c](docs/plans/phase-c-scoring-service.md) |
+| C | 🔨 | Scoring service. Deterministic core done (config-driven engine, personalized weights, parse, analyze cache seam); [scoring contract](docs/scoring-contract.md) written; live Claude vision integration still to build. | [phase-c](docs/plans/phase-c-scoring-service.md) |
 | D | ⏳ | Persistence + comparison view | [phase-d](docs/plans/phase-d-persistence-comparison.md) |
 
 Preference neutrality is a cross-cutting hard requirement spanning phases A and C: see [docs/plans/preference-neutrality.md](docs/plans/preference-neutrality.md).
@@ -87,7 +87,7 @@ Preference neutrality is a cross-cutting hard requirement spanning phases A and 
 | Method | Path | Description |
 |---|---|---|
 | POST | `/listings/parse` | Fetch a pasted public listing URL and extract facts + photo URLs (JSON-LD, then meta tags, then text) |
-| POST | `/photos/analyze` | Analyze listing photos into preference-neutral observations, cached by photoset hash (real vision stubbed, pending `scoring-contract.md`) |
+| POST | `/photos/analyze` | Analyze listing photos into preference-neutral observations, cached by photoset hash (real vision stubbed; see [scoring-contract.md](docs/scoring-contract.md)) |
 | POST | `/score` | Apply a rubric to observations -> 0-100 score, verdict, due-diligence checklist, and trace |
 | POST | `/rubrics` | Persist a rubric for an anonymous id (versioned); returns the stored version |
 | GET | `/rubrics/{anon_id}` | Latest stored rubric for an anonymous id |

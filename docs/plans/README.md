@@ -36,7 +36,7 @@ The vision layer is preference-agnostic; personalization enters only through the
 
 The build spec references companion files that are not in the repo and are prerequisites for specific phases.
 `house-flavor-quiz.jsx` is the quiz prototype and blocks the start of Phase A until obtained or reconstructed.
-`scoring-contract.md` holds the authoritative vision prompt, the observation schema, and the categorical match tables, and blocks finalizing Phase C's analyze endpoint.
+`scoring-contract.md` (the authoritative vision prompt, observation schema, style vocabulary, and match mapping) is now written at [docs/scoring-contract.md](../scoring-contract.md); Phase C's remaining work is building the vision integration against it, not obtaining it.
 `quiz-to-scores-pipeline.md` and `listing-scorer-app-plan.md` are design references that inform A through D.
 `reno-estimator.md` is out of scope and stays tabled behind a clean seam in Phase C's value category.
 
@@ -56,5 +56,5 @@ The categorical match tables and thresholds live in `services/scoring/app/scorin
 The value category (budget-headroom stub) and the due-diligence checklist are implemented.
 Confidence follows the frozen single 0.5 threshold: a low-confidence finding is scored at its observed value and added to the checklist as a verify item, with no silent value adjustment.
 
-What remains open in Phase C is live Claude vision, which is blocked on the missing `scoring-contract.md` (authoritative vision prompt and observation schema).
+What remains open in Phase C is building the live two-tier Claude vision analyzer against the now-written [scoring contract](../scoring-contract.md), and expanding the observation schema and style vocabulary to match it.
 The analyze endpoint has the photoset-hash cache and a pluggable analyzer seam ready for it.

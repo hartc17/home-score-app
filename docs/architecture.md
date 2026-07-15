@@ -46,7 +46,7 @@ Extraction prefers schema.org JSON-LD, then Open Graph and meta tags, then a reg
 `POST /photos/analyze` takes the parsed facts.
 `app/photos/analyzer.py` returns preference-neutral observations and caches them by a photoset hash so re-scoring is free.
 The real Claude vision analyzer is a pluggable seam.
-It is currently a stub that flags `vision_unconfigured`, pending the authoritative vision prompt and observation schema (`scoring-contract.md`).
+It is currently a stub that flags `vision_unconfigured`; the real analyzer will be built against the vision prompt and observation schema in [scoring-contract.md](scoring-contract.md).
 
 `POST /score` takes the rubric, the observations, and the facts.
 `app/scoring/engine.py` checks gates, computes a per-item match parameterized only by the rubric direction, aggregates each category as a weighted-average match, and normalizes across the assessed categories to a 0 to 100 total.

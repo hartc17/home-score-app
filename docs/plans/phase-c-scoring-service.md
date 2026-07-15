@@ -22,8 +22,8 @@ The pure scoring engine already exists at `services/scoring/app/scoring/engine.p
 The Pydantic schemas exist at `services/scoring/app/schemas.py` and mirror `packages/contracts`.
 An Anthropic API key and model access are required for real vision, so the analyze endpoint must degrade to a deterministic fixture path in tests.
 
-Blocking prerequisite: the companion `scoring-contract.md` (the vision prompt, the observation schema section 3, and the categorical match tables section 4) is referenced by the spec but is not in the repo.
-Obtain it and commit the observation schema verbatim into `packages/contracts` before finalizing the analyze endpoint, since the current `observation.ts` is an approximation and must be reconciled with the authoritative schema.
+The companion `scoring-contract.md` is now written at `docs/scoring-contract.md` (vision prompt, observation schema, style vocabulary, and match mapping).
+Reconcile the current `observation.ts` and Pydantic schemas with its section 5 schema when building the analyzer, since the current schema is an approximation.
 
 ## Known gaps in the current engine to fix in this phase
 
@@ -57,7 +57,7 @@ Geospatial gate automation.
 ## Data contracts touched
 
 Consumes `Rubric`, `ListingFacts`, and `ListingObservations`; produces `ScoreResult`, all from `packages/contracts` and mirrored in `services/scoring/app/schemas.py`.
-Reconcile `observation.ts` and the Pydantic `PhotoObservations` with the authoritative `scoring-contract.md` section 3 schema once obtained.
+Reconcile `observation.ts` and the Pydantic `PhotoObservations` with the authoritative `docs/scoring-contract.md` section 5 schema.
 `ScoreResult.observation_trace` must carry enough per-item detail for the UI to render the legibility example above.
 
 ## Task breakdown
@@ -74,7 +74,7 @@ Validate the URL at the boundary and raise `HTTPException` for unfetchable or un
 
 Implement `/photos/analyze` in `services/scoring/app/api/routes/photos.py`.
 Resize photos to a long edge around 1300px and cap the count around 12 to 15.
-Send them to Claude vision with the `scoring-contract.md` prompt, returning JSON only, observations and ratings and never scores.
+Send them to Claude vision with the `docs/scoring-contract.md` section 7 prompt, returning JSON only, observations and ratings and never scores.
 Every finding carries `confidence` 0 to 1; unseen features become `not_observed` with a flag; an ambiguous wood-versus-gas fireplace becomes `unverified_wood` with low confidence and a flag.
 Use two tiers: a cheaper model for a triage pass and a stronger model for full analysis.
 Cache analysis by photoset hash so re-scoring is free.
@@ -119,7 +119,7 @@ Add a neutrality test that the same photo observations yield identical observati
 
 ## Risks and open decisions
 
-The authoritative observation schema and vision prompt live in `scoring-contract.md`, which is missing and blocks finalizing analyze (see prerequisites).
+The authoritative observation schema and vision prompt live in `docs/scoring-contract.md`; the remaining analyze work is implementing the two-tier analyzer against it.
 Photo-selection logic for analysis is an open decision (all photos versus room-type-deduplicated, and the count cap).
 The two-tier model split (which model triages, which scores) needs concrete model ids and a cost and latency check.
 Comps parseability varies by source, so the value stub must renormalize cleanly when comps are absent.
@@ -127,9 +127,9 @@ Live listing pages change markup often, so parse should be resilient and fail lo
 
 ## Acceptance checklist
 
-- [ ] `scoring-contract.md` obtained and its observation schema committed to `packages/contracts`, reconciled with the Pydantic models. Blocked: file not yet provided.
+- [x] `scoring-contract.md` authored (`docs/scoring-contract.md`). Committing its section 5 schema into `packages/contracts` and the Pydantic models is the next build step.
 - [x] Parse returns real facts and photo URLs from a pasted public page.
-- [~] Analyze is preference-neutral and cached by photoset hash. Cache and pluggable analyzer seam done; live two-tier Claude vision pending `scoring-contract.md` (stub flags `vision_unconfigured`).
+- [~] Analyze is preference-neutral and cached by photoset hash. Cache and pluggable analyzer seam done; live two-tier Claude vision to be built against `docs/scoring-contract.md` (stub flags `vision_unconfigured`).
 - [x] Engine normalizes using `rubric.category_weights`, not hardcoded budgets.
 - [x] Categorical match tables live in config, not code (`scoring_config.json`).
 - [x] Value category computed from facts via the documented stub with a reno seam.
