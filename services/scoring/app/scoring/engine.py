@@ -1,135 +1,126 @@
 from __future__ import annotations
 
-from app.schemas import ListingFacts, ListingObservations, Rubric, ScoreResult
+from app.schemas import ListingFacts, ListingObservations, ObservationItem, Rubric, RubricDirections
+from app.schemas import ScoreResult
+from app.scoring.config import ScoringConfig, get_config
 
-CATEGORICAL_MATCH: dict[str, dict[str, dict[str, float]]] = {
-    "flooring": {
-        "hardwood": {"hardwood": 1.0, "tile": 0.6, "laminate": 0.4, "vinyl": 0.3, "carpet": 0.2},
-        "tile": {"tile": 1.0, "hardwood": 0.6, "laminate": 0.4, "vinyl": 0.3, "carpet": 0.2},
-    },
-    "fireplace": {
-        "wood": {"wood": 1.0, "unverified_wood": 0.7, "gas": 0.5, "electric": 0.2, "none": 0.0},
-        "none": {"none": 1.0, "electric": 0.8, "gas": 0.6, "wood": 0.3, "unverified_wood": 0.3},
-    },
-    "counters": {
-        "quartz": {"quartz": 1.0, "marble": 0.9, "granite": 0.8, "tile": 0.4, "laminate": 0.2},
-        "granite": {"granite": 1.0, "quartz": 0.8, "marble": 0.8, "tile": 0.4, "laminate": 0.2},
-    },
-    "cabinets": {
-        "painted_white": {
-            "painted_white": 1.0,
-            "painted_color": 0.5,
-            "wood_stained": 0.4,
-            "dated": 0.1,
-        },
-        "wood_stained": {
-            "wood_stained": 1.0,
-            "painted_white": 0.5,
-            "painted_color": 0.4,
-            "dated": 0.2,
-        },
-    },
-    "appliances": {
-        "stainless": {"stainless": 1.0, "black": 0.6, "white": 0.4, "mixed": 0.3},
-        "white": {"white": 1.0, "stainless": 0.5, "black": 0.4, "mixed": 0.3},
-    },
-    "exterior_style": {
-        "farmhouse": {
-            "farmhouse": 1.0,
-            "craftsman": 0.7,
-            "colonial": 0.5,
-            "ranch": 0.4,
-            "modern": 0.2,
-            "tudor": 0.3,
-            "cape_cod": 0.5,
-        },
-        "modern": {
-            "modern": 1.0,
-            "ranch": 0.5,
-            "craftsman": 0.3,
-            "colonial": 0.2,
-            "farmhouse": 0.1,
-            "tudor": 0.1,
-            "cape_cod": 0.2,
-        },
-    },
-}
-
-CONTINUOUS_ITEMS = {"tone_warmth", "natural_light", "condition", "curb_appeal", "ceiling_height"}
-
-CATEGORY_BUDGETS: dict[str, float] = {
-    "bones": 25.0,
-    "warmth": 20.0,
-    "finish": 20.0,
-    "outdoor": 15.0,
-    "value": 10.0,
-    "age": 10.0,
-}
-
-ITEM_CATEGORY: dict[str, str] = {
-    "ceiling_height": "bones",
-    "natural_light": "bones",
-    "tone_warmth": "warmth",
-    "fireplace": "warmth",
-    "flooring": "finish",
-    "counters": "finish",
-    "cabinets": "finish",
-    "appliances": "finish",
-    "condition": "finish",
-    "curb_appeal": "outdoor",
-    "lot_character": "outdoor",
-    "deck_patio": "outdoor",
-    "garage_type": "outdoor",
-    "exterior_style": "outdoor",
-}
+# Categories scored from photo observations. `value` comes from facts (MVP stub);
+# `age` is deferred until a facts-based age model lands, so it is excluded from the
+# total rather than counted as zero (which would silently cap every score).
+OBSERVED_CATEGORIES = ["bones", "warmth", "finish", "outdoor"]
 
 
-def _match_continuous(value: float, direction: str | None, item_key: str) -> float:
-    if direction == "warm" or item_key in {"natural_light", "curb_appeal", "condition"}:
-        return max(0.0, min(1.0, value / 10.0))
+def _fmt(value: float | str) -> str:
+    return f"{value:g}" if isinstance(value, (int, float)) else str(value)
+
+
+def _clamp(x: float) -> float:
+    return max(0.0, min(1.0, x))
+
+
+def _match_continuous(item_key: str, value: float, directions: RubricDirections, cfg: ScoringConfig) -> float:
+    lo, hi = cfg.continuous_ranges.get(item_key, (0.0, 10.0))
+    scaled = _clamp((value - lo) / (hi - lo)) if hi > lo else 0.0
+    if item_key in cfg.always_higher_better:
+        return scaled
+    # Bipolar continuous axis (tone_warmth): the direction flips the match, and
+    # nothing else does. An unstated direction expresses no preference.
+    direction = directions.tone
+    if direction == "warm":
+        return scaled
     if direction == "cool":
-        return max(0.0, min(1.0, (10.0 - value) / 10.0))
-    return max(0.0, min(1.0, value / 10.0))
+        return 1.0 - scaled
+    return 0.5
 
 
-def _match_categorical(item_key: str, obs_value: str, direction: str | None) -> float:
-    preferred = direction or ""
-    table = CATEGORICAL_MATCH.get(item_key, {})
-    row = table.get(preferred, {})
-    return row.get(obs_value, 0.5)
+def _match_categorical(item_key: str, obs: str, directions: RubricDirections, cfg: ScoringConfig) -> float:
+    gov = cfg.categorical_governed_by.get(item_key)
+    table = cfg.categorical_match.get(item_key, {})
+    pref: str | None = None
+    if gov is not None:
+        axis = gov.get("axis")
+        if axis:
+            dval = getattr(directions, axis, None)
+            pref = gov.get("map", {}).get(dval, gov["default"])
+        else:
+            pref = gov["default"]
+    row = table.get(pref) if pref is not None else None
+    if row is None:
+        row = next(iter(table.values()), {})
+    return row.get(obs, cfg.unknown_match_default)
+
+
+def _match(item_key: str, value: float | str, directions: RubricDirections, cfg: ScoringConfig) -> float | None:
+    if item_key in cfg.continuous_items and isinstance(value, (int, float)):
+        return _match_continuous(item_key, float(value), directions, cfg)
+    if isinstance(value, str):
+        return _match_categorical(item_key, value, directions, cfg)
+    return None
 
 
 def _check_gates(facts: ListingFacts, rubric: Rubric) -> tuple[str, str | None]:
     gates = rubric.gates
     if gates is None:
         return "pass", None
-
     if facts.price is not None and facts.price > gates.budget_max:
-        return "disqualified", f"price {facts.price} exceeds budget_max {gates.budget_max}"
-
+        return "disqualified", f"price {facts.price:g} exceeds budget_max {gates.budget_max:g}"
     if facts.beds is not None and facts.beds < gates.min_beds:
-        return "disqualified", f"beds {facts.beds} < min_beds {gates.min_beds}"
-
+        return "disqualified", f"beds {facts.beds:g} < min_beds {gates.min_beds:g}"
     if facts.baths is not None and facts.baths < gates.min_baths:
-        return "disqualified", f"baths {facts.baths} < min_baths {gates.min_baths}"
-
+        return "disqualified", f"baths {facts.baths:g} < min_baths {gates.min_baths:g}"
     if facts.garage is not None and facts.garage < gates.min_garage:
-        return "disqualified", f"garage {facts.garage} < min_garage {gates.min_garage}"
-
+        return "disqualified", f"garage {facts.garage:g} < min_garage {gates.min_garage:g}"
     if gates.home_types and facts.home_type and facts.home_type not in gates.home_types:
         return "disqualified", f"home_type {facts.home_type!r} not in {gates.home_types}"
-
     return "pass", None
 
 
-def _verdict(total: float) -> str:
-    if total >= 80:
-        return "pursue"
-    if total >= 65:
-        return "showing"
-    if total >= 50:
-        return "conditional"
-    return "weak"
+def _value_fraction(facts: ListingFacts, rubric: Rubric) -> float | None:
+    # MVP stub: headroom against the stated budget only. The reno estimator will
+    # later supply an all-in cost that replaces this seam (see docs/plans).
+    gates = rubric.gates
+    if gates is None or facts.price is None or gates.budget_max <= 0:
+        return None
+    headroom = facts.price / gates.budget_max
+    for threshold, frac in get_config().value_bands:
+        if headroom <= threshold:
+            return frac
+    return 0.5
+
+
+def _verdict(total: float, cfg: ScoringConfig) -> str:
+    for threshold, name in cfg.verdict_tiers:
+        if total >= threshold:
+            return name
+    return cfg.verdict_tiers[-1][1]
+
+
+def _flatten(observations: ListingObservations) -> tuple[dict[str, ObservationItem], set[str]]:
+    observed: dict[str, ObservationItem] = {}
+    missing: set[str] = set()
+    for photo in observations.photos:
+        for key, item in photo.observations.items():
+            if item.not_observed or item.value is None:
+                missing.add(key)
+            else:
+                observed[key] = item
+    tone = observations.overall_tone_warmth
+    if tone is not None and not tone.not_observed and tone.value is not None:
+        observed["tone_warmth"] = tone
+    return observed, {k for k in missing if k not in observed}
+
+
+def _disqualified(reason: str | None, observations: ListingObservations) -> ScoreResult:
+    return ScoreResult(
+        gate="disqualified",
+        disqualified_reason=reason,
+        category_scores={},
+        total=0.0,
+        verdict="weak",
+        flags=observations.flags,
+        dd_items=[],
+        observation_trace={},
+    )
 
 
 def score(
@@ -137,72 +128,86 @@ def score(
     observations: ListingObservations,
     facts: ListingFacts,
 ) -> ScoreResult:
-    gate_status, disqualified_reason = _check_gates(facts, rubric)
-
+    cfg = get_config()
+    gate_status, reason = _check_gates(facts, rubric)
     if gate_status == "disqualified":
-        return ScoreResult(
-            gate="disqualified",
-            disqualified_reason=disqualified_reason,
-            category_scores={k: 0.0 for k in CATEGORY_BUDGETS},
-            total=0.0,
-            verdict="weak",
-            flags=observations.flags,
-            dd_items=[],
-            observation_trace={},
-        )
+        return _disqualified(reason, observations)
 
-    flat_obs: dict[str, tuple[float | str | None, float]] = {}
-    for photo in observations.photos:
-        for key, item in photo.observations.items():
-            if not item.not_observed and item.value is not None:
-                flat_obs[key] = (item.value, item.confidence)
-
-    if observations.overall_tone_warmth and not observations.overall_tone_warmth.not_observed:
-        flat_obs["tone_warmth"] = (
-            observations.overall_tone_warmth.value,
-            observations.overall_tone_warmth.confidence,
-        )
+    observed, missing = _flatten(observations)
 
     trace: dict[str, str] = {}
-    item_contribs: dict[str, float] = {}
+    dd_items: list[str] = []
+    cat_num: dict[str, float] = {c: 0.0 for c in OBSERVED_CATEGORIES}
+    cat_den: dict[str, float] = {c: 0.0 for c in OBSERVED_CATEGORIES}
 
     for item_key, weight in rubric.item_weights.items():
-        if item_key not in flat_obs:
+        category = cfg.item_category.get(item_key)
+        if category is None:
             continue
-        obs_value, confidence = flat_obs[item_key]
-        direction = getattr(rubric.directions, item_key.replace("tone_warmth", "tone"), None)
-        if direction is None and item_key == "tone_warmth":
-            direction = rubric.directions.tone
-
-        if item_key in CONTINUOUS_ITEMS and isinstance(obs_value, (int, float)):
-            match = _match_continuous(float(obs_value), direction, item_key)
-        elif isinstance(obs_value, str):
-            match = _match_categorical(item_key, obs_value, direction)
-        else:
+        if item_key not in observed:
+            if item_key in missing:
+                dd_items.append(f"Verify {item_key}: not visible in the available photos")
             continue
+        item = observed[item_key]
+        match = _match(item_key, item.value, rubric.directions, cfg)
+        if match is None:
+            continue
+        cat_num[category] += match * weight
+        cat_den[category] += weight
+        # Frozen confidence rule: score at the observed value regardless of
+        # confidence, and add a verify item when confidence is below threshold.
+        if item.confidence < cfg.confidence_threshold:
+            dd_items.append(
+                f"Verify {item_key}: observed {_fmt(item.value)} at low confidence ({item.confidence:.2f})"
+            )
+        if item.flag:
+            dd_items.append(f"Verify {item_key}: {item.flag}")
+        trace[item_key] = (
+            f"match {match:.2f} x weight {weight:g} = {match * weight:.2f} "
+            f"(obs {_fmt(item.value)}, conf {item.confidence:.2f})"
+        )
 
-        contrib = match * weight * confidence
-        item_contribs[item_key] = contrib
-        trace[item_key] = f"match={match:.3f} weight={weight} conf={confidence:.2f} contrib={contrib:.3f}"
-
-    category_item_map: dict[str, list[str]] = {cat: [] for cat in CATEGORY_BUDGETS}
-    for item_key in item_contribs:
-        cat = ITEM_CATEGORY.get(item_key, "finish")
-        category_item_map[cat].append(item_key)
-
+    weights = rubric.category_weights
     category_scores: dict[str, float] = {}
-    for cat, budget in CATEGORY_BUDGETS.items():
-        raw = sum(item_contribs.get(k, 0.0) for k in category_item_map[cat])
-        category_scores[cat] = min(raw, budget)
+    total_num = 0.0
+    total_den = 0.0
+    assessed = 0
 
-    total = sum(category_scores.values())
+    for category in OBSERVED_CATEGORIES:
+        if cat_den[category] <= 0:
+            continue
+        fraction = cat_num[category] / cat_den[category]
+        weight = getattr(weights, category)
+        category_scores[category] = round(fraction * weight, 2)
+        trace[category] = f"{category_scores[category]:g} / {weight:g} ({int(round(fraction * 100))}% match)"
+        total_num += fraction * weight
+        total_den += weight
+        assessed += 1
+
+    value_fraction = _value_fraction(facts, rubric)
+    if value_fraction is not None:
+        weight = weights.value
+        category_scores["value"] = round(value_fraction * weight, 2)
+        trace["value"] = f"{category_scores['value']:g} / {weight:g} (headroom vs budget)"
+        total_num += value_fraction * weight
+        total_den += weight
+        assessed += 1
+        if facts.taxes_annual and facts.price and facts.taxes_annual / facts.price > cfg.tax_rate_flag:
+            dd_items.append("Verify tax assessment: annual taxes look high relative to list price")
+
+    total = round(100.0 * total_num / total_den, 2) if total_den > 0 else 0.0
+
+    if 0 < assessed < cfg.min_coverage_categories:
+        dd_items.append(
+            f"Score is based on partial evidence: only {assessed} of the taste categories could be assessed"
+        )
 
     return ScoreResult(
         gate="pass",
         category_scores=category_scores,
-        total=round(total, 2),
-        verdict=_verdict(total),
+        total=total,
+        verdict=_verdict(total, cfg),
         flags=observations.flags,
-        dd_items=[],
+        dd_items=dd_items,
         observation_trace=trace,
     )

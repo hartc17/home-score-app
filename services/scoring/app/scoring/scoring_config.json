@@ -1,0 +1,93 @@
+{
+  "confidence_threshold": 0.5,
+  "unknown_match_default": 0.5,
+  "min_coverage_categories": 3,
+  "tax_rate_flag": 0.03,
+  "verdict_tiers": [
+    [80, "pursue"],
+    [65, "showing"],
+    [50, "conditional"],
+    [0, "weak"]
+  ],
+  "value_bands": [
+    [0.85, 1.0],
+    [0.95, 0.85],
+    [1.0, 0.7]
+  ],
+  "item_category": {
+    "ceiling_height": "bones",
+    "natural_light": "bones",
+    "tone_warmth": "warmth",
+    "fireplace": "warmth",
+    "flooring": "finish",
+    "counters": "finish",
+    "cabinets": "finish",
+    "appliances": "finish",
+    "condition": "finish",
+    "curb_appeal": "outdoor",
+    "lot_character": "outdoor",
+    "deck_patio": "outdoor",
+    "garage_type": "outdoor",
+    "exterior_style": "outdoor"
+  },
+  "continuous_items": ["tone_warmth", "natural_light", "condition", "curb_appeal", "ceiling_height"],
+  "always_higher_better": ["natural_light", "condition", "curb_appeal", "ceiling_height"],
+  "continuous_ranges": {
+    "ceiling_height": [7, 11]
+  },
+  "categorical_governed_by": {
+    "flooring": { "axis": null, "default": "quality" },
+    "counters": { "axis": null, "default": "quality" },
+    "appliances": { "axis": null, "default": "quality" },
+    "cabinets": {
+      "axis": "walls",
+      "map": { "white_preferred": "painted_white", "color_preferred": "wood_stained" },
+      "default": "painted_white"
+    },
+    "fireplace": {
+      "axis": "tone",
+      "map": { "warm": "wood", "cool": "none" },
+      "default": "wood"
+    },
+    "exterior_style": {
+      "axis": "era",
+      "map": { "traditional": "traditional", "modern": "modern" },
+      "default": "traditional"
+    },
+    "lot_character": { "axis": null, "default": "quality" },
+    "deck_patio": { "axis": null, "default": "quality" },
+    "garage_type": { "axis": null, "default": "quality" }
+  },
+  "categorical_match": {
+    "flooring": {
+      "quality": { "hardwood": 1.0, "tile": 0.7, "laminate": 0.5, "vinyl": 0.4, "carpet": 0.3 }
+    },
+    "counters": {
+      "quality": { "quartz": 1.0, "granite": 0.95, "marble": 0.9, "tile": 0.5, "laminate": 0.3 }
+    },
+    "appliances": {
+      "quality": { "stainless": 1.0, "black": 0.7, "white": 0.6, "mixed": 0.5 }
+    },
+    "cabinets": {
+      "painted_white": { "painted_white": 1.0, "painted_color": 0.6, "wood_stained": 0.5, "dated": 0.15 },
+      "wood_stained": { "wood_stained": 1.0, "painted_color": 0.6, "painted_white": 0.5, "dated": 0.2 }
+    },
+    "fireplace": {
+      "wood": { "wood": 1.0, "unverified_wood": 0.7, "gas": 0.6, "electric": 0.3, "none": 0.0 },
+      "none": { "none": 1.0, "electric": 0.8, "gas": 0.6, "unverified_wood": 0.3, "wood": 0.3 }
+    },
+    "exterior_style": {
+      "traditional": { "farmhouse": 1.0, "colonial": 0.9, "craftsman": 0.9, "cape_cod": 0.85, "tudor": 0.8, "ranch": 0.5, "modern": 0.3 },
+      "modern": { "modern": 1.0, "ranch": 0.6, "craftsman": 0.5, "cape_cod": 0.4, "colonial": 0.3, "farmhouse": 0.3, "tudor": 0.3 }
+    },
+    "lot_character": {
+      "quality": { "landscaped": 1.0, "wooded": 0.9, "open": 0.7, "minimal": 0.4 }
+    },
+    "deck_patio": {
+      "quality": { "deck_composite": 1.0, "patio_stone": 0.95, "deck_wood": 0.85, "patio_concrete": 0.65, "none": 0.3 }
+    },
+    "garage_type": {
+      "quality": { "attached": 1.0, "detached": 0.75, "none": 0.2 }
+    }
+  }
+}
