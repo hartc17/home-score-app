@@ -48,16 +48,15 @@ The reveal also wants an image share-card export for virality.
 Dependency: none technical; needs photo sourcing and licensing.
 Size: medium, mostly content plus a small export path.
 
-### Phase C remainder: live vision and the full style model
+### Phase C remainder: live vision
 
-The deterministic core is built.
-What remains is specified in [scoring-contract.md](scoring-contract.md) section 10:
-build the two-tier Claude vision analyzer behind the existing `Analyzer` seam using the section 7 prompt;
-expand `packages/contracts` and the Pydantic schemas to the section 5 observation schema;
-add the `ornament` and `naturalness` taste axes to the quiz and rubric directions;
-add the style coordinate tables and the style-affinity match (section 6.3) to `scoring_config.json` and the engine.
+The deterministic core is built, and now so is the full style model.
+The style-affinity match (section 6.3), the style coordinate tables, the expanded observation schema, and the `ornament` and `naturalness` rubric directions are all implemented and tested.
+What remains, per [scoring-contract.md](scoring-contract.md) section 10:
+build the two-tier Claude vision analyzer behind the existing `Analyzer` seam using the section 7 prompt (the only piece needing an Anthropic API key);
+have the quiz infer the `ornament` and `naturalness` axes (the rubric and scorer already accept them).
 Dependency: an Anthropic API key and a cost and latency check on the two-tier split.
-Size: large.
+Size: medium now that the deterministic model is in place.
 
 ### Phase D: persistence and comparison
 

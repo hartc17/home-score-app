@@ -29,6 +29,8 @@ class RubricDirections(BaseModel):
     tone: str | None = None
     era: str | None = None
     walls: str | None = None
+    ornament: str | None = None
+    naturalness: str | None = None
 
 
 class RubricArchetype(BaseModel):
@@ -61,8 +63,13 @@ class ListingFacts(BaseModel):
     photo_urls: list[str]
 
 
+class StyleClassification(BaseModel):
+    style: str
+    confidence: float
+
+
 class ObservationItem(BaseModel):
-    value: float | str | None
+    value: float | str | list[StyleClassification] | None
     confidence: float
     not_observed: bool | None = None
     flag: str | None = None

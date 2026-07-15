@@ -86,16 +86,25 @@ Taste is modeled as a small set of bipolar axes.
 Each axis has two neutral poles and neither pole is framed as better.
 A buyer's position on an axis is inferred from quiz consistency; an axis the buyer was indifferent on is left unset and imposes nothing.
 
-| Axis | Negative pole | Positive pole | What it reads |
+Each axis runs from -1 at its negative pole to +1 at its positive pole.
+
+| Axis | Negative pole (-1) | Positive pole (+1) | What it reads |
 |---|---|---|---|
 | `warmth` | cool | warm | color temperature, material warmth, light quality |
-| `modernity` | traditional | modern | ornament, line, era of forms |
-| `ornament` | minimal | detailed | visual density, trim, decoration |
+| `modernity` | traditional | modern | line, era of forms |
+| `minimalism` | ornate | minimal | visual density, trim, decoration |
 | `lightness` | dark | light | wall and finish value, airiness |
 | `naturalness` | engineered | natural | wood, stone, fiber versus glass, metal, lacquer |
 
-The MVP rubric implements `warmth` (as `tone`), `modernity` (as `era`), and `lightness` (as `walls`).
-`ornament` and `naturalness` are defined here for the quiz and scorer to grow into; section 10 tracks the delta.
+The style coordinate tables below use these same axes, so a positive `minimalism` value means a cleaner, less ornamented style.
+
+The rubric carries a buyer's position as `directions`, and each direction field maps to one axis:
+`tone` to `warmth` (warm is +1, cool is -1),
+`era` to `modernity` (modern is +1, traditional is -1),
+`walls` to `lightness` (white_preferred is +1, color_preferred is -1),
+`ornament` to `minimalism` (minimal is +1, ornate is -1),
+`naturalness` to `naturalness` (natural is +1, engineered is -1).
+The MVP rubric implements `tone`, `era`, and `walls`; `ornament` and `naturalness` are defined for the quiz and scorer to grow into, and section 10 tracks the delta.
 
 ### 4.2 Architectural styles (exterior)
 
@@ -103,7 +112,7 @@ Each style is defined by concrete, photo-observable cues, and placed as a fixed 
 The vision layer classifies; the style point plus the buyer's axis position determine match (section 6.3).
 Coordinates are in the range -1 to 1 and live in config, so they are tunable without code change.
 
-| Style | Key visible cues | warmth | modernity | ornament | lightness | naturalness |
+| Style | Key visible cues | warmth | modernity | minimalism | lightness | naturalness |
 |---|---|---|---|---|---|---|
 | `modern_farmhouse` | board-and-batten or shiplap siding, white or greige body, black window frames, gable roof, covered porch, metal roof accents | +0.6 | +0.2 | +0.2 | +0.7 | +0.6 |
 | `craftsman` | low-pitched gable, deep eaves, exposed rafter tails, tapered porch columns, natural wood and stone, earthy tones | +0.8 | -0.6 | -0.3 | -0.2 | +0.9 |
@@ -122,7 +131,7 @@ Coordinates are in the range -1 to 1 and live in config, so they are tunable wit
 
 Placed in the same axis space, classified from the same neutral cues.
 
-| Style | Key visible cues | warmth | modernity | ornament | lightness | naturalness |
+| Style | Key visible cues | warmth | modernity | minimalism | lightness | naturalness |
 |---|---|---|---|---|---|---|
 | `modern` | clean lines, neutral palette, smooth surfaces, low furniture, minimal decor | -0.1 | +0.9 | +0.7 | +0.2 | -0.2 |
 | `contemporary` | current forms, mix of curves and clean lines, neutral base with bold accents | 0.0 | +0.8 | +0.5 | +0.2 | 0.0 |
@@ -339,16 +348,16 @@ Scores record the rubric version that produced them, so tuning never rewrites hi
 ## 10. Reconciliation with the current code
 
 What matches this contract today:
-the gate checks, the continuous and categorical match machinery, the category normalization, the verdict tiers, the frozen 0.5 confidence rule, and the photoset-hash cache seam.
+the gate checks, the continuous and categorical match machinery, the category normalization, the verdict tiers, the frozen 0.5 confidence rule, and the photoset-hash cache seam;
+the style-affinity match of section 6.3 with the style coordinate tables of sections 4.2 and 4.3 in `scoring_config.json`, applied to the `exterior_style` and `interior_style` items;
+the `ornament` and `naturalness` direction fields in the rubric (`RubricDirections`) and the observation schema of section 5 in `packages/contracts` and the Pydantic models, including `StyleClassification` values, `interior_style`, `ornamentation`, and `wall_lightness`.
 
-What this contract adds, to be built:
-the `ornament` and `naturalness` axes in the quiz and rubric `directions`;
-the style-affinity match of section 6.3 and the style coordinate tables of sections 4.2 and 4.3 in `scoring_config.json`;
-the `interior_style`, `architectural_style`, `ornamentation`, and `wall_lightness` observations in `packages/contracts` and the Pydantic schemas;
-the two-tier vision analyzer behind the existing `Analyzer` seam, using the prompt in section 7;
+What this contract still adds, to be built:
+the two-tier vision analyzer behind the existing `Analyzer` seam, using the prompt in section 7, which is the only piece that requires an Anthropic API key;
+the quiz-side inference of the `ornament` and `naturalness` axes (the rubric and scorer already accept them; the quiz does not yet emit them);
 the district and road-class gates once geospatial data is ingested.
 
-The observation schema in section 5 is the version to copy into `packages/contracts` and mirror in `services/scoring/app/schemas.py`, replacing the current approximation.
+The engine reads style items via `style_items` in config, so a style observation whose value is a `StyleClassification` list is matched through the axis space rather than a fixed table.
 
 ## 11. Sources
 

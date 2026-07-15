@@ -58,6 +58,59 @@ def _match(item_key: str, value: float | str, directions: RubricDirections, cfg:
     return None
 
 
+def _taste_vector(directions: RubricDirections, cfg: ScoringConfig) -> dict[str, float]:
+    # The buyer's point in style-axis space, built only from stated directions.
+    # An axis with no stated direction is absent, so it imposes nothing.
+    vec: dict[str, float] = {}
+    for field, spec in cfg.direction_to_axis.items():
+        value = getattr(directions, field, None)
+        if value is None:
+            continue
+        mapped = spec["map"].get(value)
+        if mapped is not None:
+            vec[spec["axis"]] = float(mapped)
+    return vec
+
+
+def _style_match(style: str, taste: dict[str, float], cfg: ScoringConfig) -> float | None:
+    coords = cfg.style_coordinates.get(style)
+    if coords is None:
+        return None
+    axes = [a for a in taste if a in coords]
+    if not axes:
+        return None
+    return sum(1.0 - abs(taste[a] - coords[a]) / 2.0 for a in axes) / len(axes)
+
+
+def _classifications(value: object, confidence: float) -> list[tuple[str, float]]:
+    if isinstance(value, list):
+        return [(c.style, c.confidence) for c in value]
+    if isinstance(value, str):
+        return [(value, confidence)]
+    return []
+
+
+def _style_affinity(item: ObservationItem, taste: dict[str, float], cfg: ScoringConfig) -> float | None:
+    if not taste:
+        return None
+    num = 0.0
+    den = 0.0
+    for style, conf in _classifications(item.value, item.confidence):
+        match = _style_match(style, taste, cfg)
+        if match is None:
+            continue
+        num += match * conf
+        den += conf
+    return (num / den) if den > 0 else None
+
+
+def _top_style(item: ObservationItem) -> str:
+    classes = _classifications(item.value, item.confidence)
+    if not classes:
+        return "unknown"
+    return max(classes, key=lambda c: c[1])[0]
+
+
 def _check_gates(facts: ListingFacts, rubric: Rubric) -> tuple[str, str | None]:
     gates = rubric.gates
     if gates is None:
@@ -134,6 +187,7 @@ def score(
         return _disqualified(reason, observations)
 
     observed, missing = _flatten(observations)
+    taste = _taste_vector(rubric.directions, cfg)
 
     trace: dict[str, str] = {}
     dd_items: list[str] = []
@@ -149,7 +203,12 @@ def score(
                 dd_items.append(f"Verify {item_key}: not visible in the available photos")
             continue
         item = observed[item_key]
-        match = _match(item_key, item.value, rubric.directions, cfg)
+        if item_key in cfg.style_items:
+            match = _style_affinity(item, taste, cfg)
+            described = _top_style(item)
+        else:
+            match = _match(item_key, item.value, rubric.directions, cfg)
+            described = _fmt(item.value)
         if match is None:
             continue
         cat_num[category] += match * weight
@@ -158,13 +217,13 @@ def score(
         # confidence, and add a verify item when confidence is below threshold.
         if item.confidence < cfg.confidence_threshold:
             dd_items.append(
-                f"Verify {item_key}: observed {_fmt(item.value)} at low confidence ({item.confidence:.2f})"
+                f"Verify {item_key}: observed {described} at low confidence ({item.confidence:.2f})"
             )
         if item.flag:
             dd_items.append(f"Verify {item_key}: {item.flag}")
         trace[item_key] = (
             f"match {match:.2f} x weight {weight:g} = {match * weight:.2f} "
-            f"(obs {_fmt(item.value)}, conf {item.confidence:.2f})"
+            f"(obs {described}, conf {item.confidence:.2f})"
         )
 
     weights = rubric.category_weights

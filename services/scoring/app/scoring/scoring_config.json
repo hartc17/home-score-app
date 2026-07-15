@@ -28,7 +28,40 @@
     "lot_character": "outdoor",
     "deck_patio": "outdoor",
     "garage_type": "outdoor",
-    "exterior_style": "outdoor"
+    "exterior_style": "outdoor",
+    "interior_style": "finish"
+  },
+  "style_items": ["exterior_style", "interior_style"],
+  "style_axes": ["warmth", "modernity", "minimalism", "lightness", "naturalness"],
+  "direction_to_axis": {
+    "tone": { "axis": "warmth", "map": { "warm": 1, "cool": -1 } },
+    "era": { "axis": "modernity", "map": { "modern": 1, "traditional": -1 } },
+    "walls": { "axis": "lightness", "map": { "white_preferred": 1, "color_preferred": -1 } },
+    "ornament": { "axis": "minimalism", "map": { "minimal": 1, "ornate": -1 } },
+    "naturalness": { "axis": "naturalness", "map": { "natural": 1, "engineered": -1 } }
+  },
+  "style_coordinates": {
+    "modern_farmhouse": { "warmth": 0.6, "modernity": 0.2, "minimalism": 0.2, "lightness": 0.7, "naturalness": 0.6 },
+    "craftsman": { "warmth": 0.8, "modernity": -0.6, "minimalism": -0.3, "lightness": -0.2, "naturalness": 0.9 },
+    "colonial": { "warmth": 0.2, "modernity": -0.8, "minimalism": -0.2, "lightness": 0.2, "naturalness": 0.3 },
+    "ranch": { "warmth": 0.3, "modernity": -0.1, "minimalism": 0.2, "lightness": 0.1, "naturalness": 0.2 },
+    "tudor": { "warmth": 0.4, "modernity": -0.9, "minimalism": -0.6, "lightness": -0.4, "naturalness": 0.4 },
+    "victorian": { "warmth": 0.3, "modernity": -1.0, "minimalism": -1.0, "lightness": -0.2, "naturalness": 0.2 },
+    "midcentury_modern": { "warmth": 0.4, "modernity": 0.7, "minimalism": 0.4, "lightness": 0.3, "naturalness": 0.5 },
+    "contemporary": { "warmth": 0.0, "modernity": 0.9, "minimalism": 0.5, "lightness": 0.2, "naturalness": 0.0 },
+    "modern": { "warmth": -0.2, "modernity": 1.0, "minimalism": 0.8, "lightness": 0.1, "naturalness": -0.3 },
+    "mediterranean": { "warmth": 0.7, "modernity": -0.5, "minimalism": -0.3, "lightness": 0.1, "naturalness": 0.4 },
+    "cape_cod": { "warmth": 0.4, "modernity": -0.5, "minimalism": 0.1, "lightness": 0.5, "naturalness": 0.4 },
+    "prairie": { "warmth": 0.4, "modernity": 0.2, "minimalism": 0.1, "lightness": -0.1, "naturalness": 0.7 },
+    "minimalist": { "warmth": -0.2, "modernity": 0.8, "minimalism": 1.0, "lightness": 0.4, "naturalness": -0.1 },
+    "traditional": { "warmth": 0.5, "modernity": -0.8, "minimalism": -0.6, "lightness": -0.1, "naturalness": 0.4 },
+    "transitional": { "warmth": 0.2, "modernity": 0.1, "minimalism": 0.2, "lightness": 0.2, "naturalness": 0.2 },
+    "farmhouse": { "warmth": 0.7, "modernity": -0.2, "minimalism": -0.1, "lightness": 0.5, "naturalness": 0.8 },
+    "industrial": { "warmth": -0.3, "modernity": 0.4, "minimalism": 0.1, "lightness": -0.7, "naturalness": 0.3 },
+    "scandinavian": { "warmth": 0.3, "modernity": 0.6, "minimalism": 0.7, "lightness": 0.8, "naturalness": 0.6 },
+    "coastal": { "warmth": 0.2, "modernity": 0.2, "minimalism": 0.2, "lightness": 0.8, "naturalness": 0.6 },
+    "bohemian": { "warmth": 0.7, "modernity": -0.2, "minimalism": -1.0, "lightness": -0.1, "naturalness": 0.6 },
+    "rustic": { "warmth": 0.8, "modernity": -0.5, "minimalism": -0.4, "lightness": -0.3, "naturalness": 0.9 }
   },
   "continuous_items": ["tone_warmth", "natural_light", "condition", "curb_appeal", "ceiling_height"],
   "always_higher_better": ["natural_light", "condition", "curb_appeal", "ceiling_height"],
@@ -48,11 +81,6 @@
       "axis": "tone",
       "map": { "warm": "wood", "cool": "none" },
       "default": "wood"
-    },
-    "exterior_style": {
-      "axis": "era",
-      "map": { "traditional": "traditional", "modern": "modern" },
-      "default": "traditional"
     },
     "lot_character": { "axis": null, "default": "quality" },
     "deck_patio": { "axis": null, "default": "quality" },
@@ -75,10 +103,6 @@
     "fireplace": {
       "wood": { "wood": 1.0, "unverified_wood": 0.7, "gas": 0.6, "electric": 0.3, "none": 0.0 },
       "none": { "none": 1.0, "electric": 0.8, "gas": 0.6, "unverified_wood": 0.3, "wood": 0.3 }
-    },
-    "exterior_style": {
-      "traditional": { "farmhouse": 1.0, "colonial": 0.9, "craftsman": 0.9, "cape_cod": 0.85, "tudor": 0.8, "ranch": 0.5, "modern": 0.3 },
-      "modern": { "modern": 1.0, "ranch": 0.6, "craftsman": 0.5, "cape_cod": 0.4, "colonial": 0.3, "farmhouse": 0.3, "tudor": 0.3 }
     },
     "lot_character": {
       "quality": { "landscaped": 1.0, "wooded": 0.9, "open": 0.7, "minimal": 0.4 }

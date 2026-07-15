@@ -24,6 +24,8 @@ export interface RubricDirections {
   tone?: "warm" | "cool";
   era?: "traditional" | "modern";
   walls?: "white_preferred" | "color_preferred";
+  ornament?: "minimal" | "ornate";
+  naturalness?: "natural" | "engineered";
 }
 
 export interface RubricArchetype {

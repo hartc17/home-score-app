@@ -182,7 +182,8 @@ Two rubrics with different directions or different category weights therefore pr
 Confidence follows a single 0.5 threshold: a low-confidence finding is scored at its observed value and added to the due-diligence checklist, with no silent value adjustment.
 The value category is an MVP stub computed from budget headroom, with a seam for the reno estimator.
 The age category is deferred and excluded from the total rather than counted as zero.
-The full style model (axes, style vocabulary, style-affinity match) is specified in [scoring-contract.md](scoring-contract.md).
+Architectural and interior style are scored by style affinity: each style is a fixed point in a five-axis taste space, the buyer is a point derived from their rubric directions, and the match is their axis agreement (see [scoring-contract.md](scoring-contract.md) sections 4 and 6.3).
+Style coordinates live in `scoring_config.json`, so the vocabulary grows without code change.
 
 ## Persistence
 

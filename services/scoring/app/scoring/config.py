@@ -22,6 +22,10 @@ class ScoringConfig:
     continuous_ranges: dict[str, tuple[float, float]]
     categorical_governed_by: dict[str, dict]
     categorical_match: dict[str, dict[str, dict[str, float]]]
+    style_items: set[str]
+    style_axes: list[str]
+    direction_to_axis: dict[str, dict]
+    style_coordinates: dict[str, dict[str, float]]
 
 
 @lru_cache(maxsize=1)
@@ -40,4 +44,8 @@ def get_config() -> ScoringConfig:
         continuous_ranges={k: (float(a), float(b)) for k, (a, b) in raw["continuous_ranges"].items()},
         categorical_governed_by=raw["categorical_governed_by"],
         categorical_match=raw["categorical_match"],
+        style_items=set(raw["style_items"]),
+        style_axes=raw["style_axes"],
+        direction_to_axis=raw["direction_to_axis"],
+        style_coordinates=raw["style_coordinates"],
     )
