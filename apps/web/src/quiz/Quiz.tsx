@@ -1,0 +1,74 @@
+import { useCallback, useEffect, useState } from "react";
+import { QUESTIONS, type QuizOption } from "./questions.ts";
+import { Plate } from "./Plate.tsx";
+
+export function Quiz({ onComplete }: { onComplete: (picks: QuizOption[]) => void }) {
+  const [index, setIndex] = useState(0);
+  const [picks, setPicks] = useState<QuizOption[]>([]);
+
+  const choose = useCallback(
+    (side: 0 | 1) => {
+      const option = QUESTIONS[index].options[side];
+      const next = [...picks, option];
+      if (next.length === QUESTIONS.length) {
+        onComplete(next);
+        return;
+      }
+      setPicks(next);
+      setIndex(next.length);
+    },
+    [index, picks, onComplete],
+  );
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "ArrowLeft" || e.key === "1") choose(0);
+      else if (e.key === "ArrowRight" || e.key === "2") choose(1);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [choose]);
+
+  const question = QUESTIONS[index];
+  const progress = (index / QUESTIONS.length) * 100;
+
+  return (
+    <div className="mx-auto flex min-h-screen max-w-4xl flex-col px-6 py-10">
+      <div className="mb-8">
+        <div className="mb-2 flex items-center justify-between text-sm text-stone-500">
+          <span className="font-medium tracking-wide">HouseFlavor</span>
+          <span>
+            {index + 1} / {QUESTIONS.length}
+          </span>
+        </div>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-stone-200">
+          <div className="h-full rounded-full bg-stone-800 transition-all duration-300" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
+
+      <h2 className="mb-8 text-center text-2xl font-semibold text-stone-800">{question.prompt}</h2>
+
+      <div className="grid flex-1 grid-cols-1 gap-5 sm:grid-cols-2">
+        {question.options.map((option, side) => (
+          <button
+            key={option.id}
+            onClick={() => choose(side as 0 | 1)}
+            className="group relative overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm ring-stone-800 transition hover:-translate-y-1 hover:shadow-md focus:outline-none focus-visible:ring-2"
+            aria-label={`Option ${side + 1}`}
+          >
+            <div className="aspect-[4/3] w-full">
+              <Plate spec={option.plate} />
+            </div>
+            <span className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-sm font-semibold text-stone-700 shadow">
+              {side + 1}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <p className="mt-8 text-center text-sm text-stone-400">
+        Tap a photo, or use the arrow keys. No wrong answers.
+      </p>
+    </div>
+  );
+}

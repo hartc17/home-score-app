@@ -87,7 +87,7 @@ The same listing scores differently for different users - that is the product.
 
 | Phase | Status |
 |---|---|
-| A | ⏳ Quiz -> Rubric (client-side inference, anonymous persistence) |
+| A | 🔨 Quiz -> Rubric (client-side inference, anonymous persistence). Core built; curated photo bank pending. |
 | B | ⏳ Gates + accounts + anonymous->account rubric merge |
 | C | ⏳ Scoring service (parse, analyze, score endpoints) |
 | D | ⏳ Persistence + comparison view |

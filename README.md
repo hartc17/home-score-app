@@ -33,6 +33,10 @@ npm install
 npm run dev --workspace=apps/web
 ```
 
+The web app opens on the forced-choice quiz.
+Answering it infers a taste rubric (`packages/contracts` `Rubric`), persists it anonymously in the browser, and shows the archetype reveal.
+The quiz module lives in `apps/web/src/quiz/`: `questions.ts` (data-driven bank), `inference.ts` (pure picks-to-rubric), `storage.ts` (anonymous persistence), and the `Quiz`/`Reveal` components.
+
 ### Scoring service
 
 ```bash
@@ -67,7 +71,7 @@ Detailed, actionable plans for each phase live in [docs/plans/](docs/plans/READM
 
 | Phase | Status | Description | Plan |
 |---|---|---|---|
-| A | ⏳ | Quiz -> Rubric (client-side inference, anonymous persistence) | [phase-a](docs/plans/phase-a-quiz-rubric.md) |
+| A | 🔨 | Quiz -> Rubric (client-side inference, anonymous persistence). Core built with SVG stand-in plates; curated photo bank still pending. | [phase-a](docs/plans/phase-a-quiz-rubric.md) |
 | B | ⏳ | Gates + accounts + anonymous->account rubric merge | [phase-b](docs/plans/phase-b-gates-accounts.md) |
 | C | ⏳ | Scoring service (parse, analyze, score endpoints) | [phase-c](docs/plans/phase-c-scoring-service.md) |
 | D | ⏳ | Persistence + comparison view | [phase-d](docs/plans/phase-d-persistence-comparison.md) |
