@@ -127,12 +127,12 @@ Live listing pages change markup often, so parse should be resilient and fail lo
 
 ## Acceptance checklist
 
-- [ ] `scoring-contract.md` obtained and its observation schema committed to `packages/contracts`, reconciled with the Pydantic models.
-- [ ] Parse returns real facts and photo URLs from a pasted public page.
-- [ ] Analyze is preference-neutral, JSON-only, with confidence and flags, two-tier, and cached by photoset hash.
-- [ ] Engine normalizes using `rubric.category_weights`, not hardcoded budgets.
-- [ ] Categorical match tables live in config, not code.
-- [ ] Value category computed from facts via the documented stub with a reno seam.
-- [ ] Confidence follows the frozen 0.5 threshold rule, feeding the due-diligence checklist with no silent value adjustment.
-- [ ] A pasted URL returns a full score with a legible trace.
-- [ ] Two different rubrics produce meaningfully different totals for the same listing.
+- [ ] `scoring-contract.md` obtained and its observation schema committed to `packages/contracts`, reconciled with the Pydantic models. Blocked: file not yet provided.
+- [x] Parse returns real facts and photo URLs from a pasted public page.
+- [~] Analyze is preference-neutral and cached by photoset hash. Cache and pluggable analyzer seam done; live two-tier Claude vision pending `scoring-contract.md` (stub flags `vision_unconfigured`).
+- [x] Engine normalizes using `rubric.category_weights`, not hardcoded budgets.
+- [x] Categorical match tables live in config, not code (`scoring_config.json`).
+- [x] Value category computed from facts via the documented stub with a reno seam.
+- [x] Confidence follows the frozen 0.5 threshold rule, feeding the due-diligence checklist with no silent value adjustment.
+- [x] A pasted URL returns a full score with a legible trace (deterministic chain proven in `test_scoring_pipeline.py`; live vision stubbed).
+- [x] Two different rubrics produce meaningfully different totals for the same listing.

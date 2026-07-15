@@ -49,10 +49,12 @@ Auth technology, unspecified by the spec and chosen in Phase B.
 The split of table ownership between Phase B and Phase D (Phase B owns `users` and `rubrics`, Phase D owns the rest).
 Photo-selection logic for analysis and the two-tier model split (Phase C).
 
-## Known engine gaps Phase C must close
+## Engine gaps Phase C has closed
 
-The engine currently hardcodes `CATEGORY_BUDGETS` and ignores the rubric's personalized `category_weights`.
-The categorical match tables live in code rather than config.
-The value category and the due-diligence checklist are not yet implemented.
-The confidence handling multiplies contribution by confidence, but the frozen rule is a single 0.5 threshold that scores at observed value and adds a verify item, with no silent value adjustment.
-Each of these is listed as a task in the Phase C plan.
+The engine now normalizes using the rubric's personalized `category_weights` instead of a hardcoded budget table.
+The categorical match tables and thresholds live in `services/scoring/app/scoring/scoring_config.json`, so tuning does not require a code change.
+The value category (budget-headroom stub) and the due-diligence checklist are implemented.
+Confidence follows the frozen single 0.5 threshold: a low-confidence finding is scored at its observed value and added to the checklist as a verify item, with no silent value adjustment.
+
+What remains open in Phase C is live Claude vision, which is blocked on the missing `scoring-contract.md` (authoritative vision prompt and observation schema).
+The analyze endpoint has the photoset-hash cache and a pluggable analyzer seam ready for it.
