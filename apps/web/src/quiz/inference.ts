@@ -136,10 +136,23 @@ function buildDirections(axes: Record<AxisId, AxisStat>): RubricDirections {
   for (const axis of AXIS_IDS) {
     const dir = axes[axis].direction;
     if (dir === null) continue;
-    const key = AXIS_TO_DIRECTION[axis];
-    if (key === "tone") directions.tone = dir as "warm" | "cool";
-    else if (key === "era") directions.era = dir as "traditional" | "modern";
-    else directions.walls = dir as "white_preferred" | "color_preferred";
+    switch (AXIS_TO_DIRECTION[axis]) {
+      case "tone":
+        directions.tone = dir as "warm" | "cool";
+        break;
+      case "era":
+        directions.era = dir as "traditional" | "modern";
+        break;
+      case "walls":
+        directions.walls = dir as "white_preferred" | "color_preferred";
+        break;
+      case "ornament":
+        directions.ornament = dir as "minimal" | "ornate";
+        break;
+      case "naturalness":
+        directions.naturalness = dir as "natural" | "engineered";
+        break;
+    }
   }
   return directions;
 }
@@ -162,11 +175,10 @@ function pickArchetype(tone: number, era: number): Archetype {
 }
 
 export function inferProfile(picks: QuizOption[]): TasteProfile {
-  const axes = {
-    tone: axisStat("tone", picks),
-    era: axisStat("era", picks),
-    palette: axisStat("palette", picks),
-  } as Record<AxisId, AxisStat>;
+  const axes = Object.fromEntries(AXIS_IDS.map((axis) => [axis, axisStat(axis, picks)])) as Record<
+    AxisId,
+    AxisStat
+  >;
 
   const rawCategory = CATEGORIES.map((cat) => {
     const emphasis = categoryEmphasis(cat, picks);

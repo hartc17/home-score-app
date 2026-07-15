@@ -350,11 +350,11 @@ Scores record the rubric version that produced them, so tuning never rewrites hi
 What matches this contract today:
 the gate checks, the continuous and categorical match machinery, the category normalization, the verdict tiers, the frozen 0.5 confidence rule, and the photoset-hash cache seam;
 the style-affinity match of section 6.3 with the style coordinate tables of sections 4.2 and 4.3 in `scoring_config.json`, applied to the `exterior_style` and `interior_style` items;
-the `ornament` and `naturalness` direction fields in the rubric (`RubricDirections`) and the observation schema of section 5 in `packages/contracts` and the Pydantic models, including `StyleClassification` values, `interior_style`, `ornamentation`, and `wall_lightness`.
+the `ornament` and `naturalness` direction fields in the rubric (`RubricDirections`) and the observation schema of section 5 in `packages/contracts` and the Pydantic models, including `StyleClassification` values, `interior_style`, `ornamentation`, and `wall_lightness`;
+the quiz-side inference of all five taste axes, including `ornament` and `naturalness` (`apps/web/src/quiz/`), so a completed quiz emits every direction the scorer reads.
 
 What this contract still adds, to be built:
 the two-tier vision analyzer behind the existing `Analyzer` seam, using the prompt in section 7, which is the only piece that requires an Anthropic API key;
-the quiz-side inference of the `ornament` and `naturalness` axes (the rubric and scorer already accept them; the quiz does not yet emit them);
 the district and road-class gates once geospatial data is ingested.
 
 The engine reads style items via `style_items` in config, so a style observation whose value is a `StyleClassification` list is matched through the axis space rather than a fixed table.

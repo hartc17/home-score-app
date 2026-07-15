@@ -50,11 +50,9 @@ Size: medium, mostly content plus a small export path.
 
 ### Phase C remainder: live vision
 
-The deterministic core is built, and now so is the full style model.
-The style-affinity match (section 6.3), the style coordinate tables, the expanded observation schema, and the `ornament` and `naturalness` rubric directions are all implemented and tested.
-What remains, per [scoring-contract.md](scoring-contract.md) section 10:
-build the two-tier Claude vision analyzer behind the existing `Analyzer` seam using the section 7 prompt (the only piece needing an Anthropic API key);
-have the quiz infer the `ornament` and `naturalness` axes (the rubric and scorer already accept them).
+The deterministic core is built, and now so is the full style model end to end.
+The style-affinity match (section 6.3), the style coordinate tables, the expanded observation schema, the `ornament` and `naturalness` rubric directions, and the quiz-side inference of all five taste axes are implemented and tested.
+What remains, per [scoring-contract.md](scoring-contract.md) section 10, is the two-tier Claude vision analyzer behind the existing `Analyzer` seam using the section 7 prompt, which is the only piece needing an Anthropic API key.
 Dependency: an Anthropic API key and a cost and latency check on the two-tier split.
 Size: medium now that the deterministic model is in place.
 

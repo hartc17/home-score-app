@@ -112,4 +112,36 @@ export const QUESTIONS: Question[] = [
       { id: "q10b", plate: { ...base, motif: "living", ornate: false }, d: { era: -2 }, tags: ["flooring"] },
     ],
   },
+  {
+    id: "q11",
+    prompt: "Which detailing feels right?",
+    options: [
+      { id: "q11a", plate: { ...base, motif: "kitchen", warm: true, ornate: true }, d: { ornament: -2 }, tags: ["cabinets"] },
+      { id: "q11b", plate: { ...base, motif: "kitchen", ornate: false }, d: { ornament: 2 }, tags: ["counters"] },
+    ],
+  },
+  {
+    id: "q12",
+    prompt: "Pick the room that feels most like you.",
+    options: [
+      { id: "q12a", plate: { ...base, motif: "living", ornate: true }, d: { ornament: -2 }, tags: ["ceiling_height"] },
+      { id: "q12b", plate: { ...base, motif: "living", ornate: false }, d: { ornament: 2 }, tags: ["natural_light"] },
+    ],
+  },
+  {
+    id: "q13",
+    prompt: "Which surfaces would you rather live with?",
+    options: [
+      { id: "q13a", plate: { ...base, motif: "living", warm: true }, d: { naturalness: 2 }, tags: ["flooring"] },
+      { id: "q13b", plate: { ...base, motif: "living", lightWalls: true }, d: { naturalness: -2 }, tags: ["appliances"] },
+    ],
+  },
+  {
+    id: "q14",
+    prompt: "Choose the setting you would relax in.",
+    options: [
+      { id: "q14a", plate: { ...base, motif: "yard", warm: true }, d: { naturalness: 2 }, tags: ["lot_character"] },
+      { id: "q14b", plate: { ...base, motif: "yard" }, d: { naturalness: -2 }, tags: ["deck_patio"] },
+    ],
+  },
 ];

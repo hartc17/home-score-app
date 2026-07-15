@@ -40,6 +40,8 @@ describe("inferProfile directions", () => {
     expect(rubric.directions.tone).toBe("warm");
     expect(rubric.directions.era).toBe("traditional");
     expect(rubric.directions.walls).toBe("white_preferred");
+    expect(rubric.directions.ornament).toBe("minimal");
+    expect(rubric.directions.naturalness).toBe("natural");
     expect(axes.tone.band).toBe("strong");
     expect(axes.era.band).toBe("strong");
     expect(rubric.archetype.name).toBe("The Hearthkeeper");
@@ -50,6 +52,8 @@ describe("inferProfile directions", () => {
     expect(rubric.directions.tone).toBe("cool");
     expect(rubric.directions.era).toBe("modern");
     expect(rubric.directions.walls).toBe("color_preferred");
+    expect(rubric.directions.ornament).toBe("ornate");
+    expect(rubric.directions.naturalness).toBe("engineered");
     expect(axes.tone.band).toBe("strong");
     expect(rubric.archetype.name).toBe("The Minimalist");
   });
@@ -64,7 +68,7 @@ describe("inferProfile directions", () => {
 
   it("test_infer_alternating_all_condition_curator_no_directions", () => {
     // Alternate the sign per axis so every axis nets to zero.
-    const toggle: Record<AxisId, number> = { tone: 1, era: 1, palette: 1 };
+    const toggle: Record<AxisId, number> = { tone: 1, era: 1, palette: 1, ornament: 1, naturalness: 1 };
     const picks = QUESTIONS.map((_, i) => {
       const axis = primaryAxis(i);
       const sign = toggle[axis];
@@ -76,6 +80,21 @@ describe("inferProfile directions", () => {
     expect(rubric.directions.tone).toBeUndefined();
     expect(rubric.directions.era).toBeUndefined();
     expect(rubric.directions.walls).toBeUndefined();
+    expect(rubric.directions.ornament).toBeUndefined();
+    expect(rubric.directions.naturalness).toBeUndefined();
+  });
+
+  it("test_infer_all_positive_sets_new_axes_strong", () => {
+    const { axes } = inferProfile(allSign(1));
+    expect(axes.ornament.band).toBe("strong");
+    expect(axes.naturalness.band).toBe("strong");
+  });
+
+  it("test_infer_alternating_ornament_downweights_ornament_axis", () => {
+    const picks = session((i) => (primaryAxis(i) === "ornament" ? ((i % 2) as 0 | 1) : 0));
+    const { rubric, axes } = inferProfile(picks);
+    expect(axes.ornament.band).toBe("none");
+    expect(rubric.directions.ornament).toBeUndefined();
   });
 });
 
@@ -117,9 +136,7 @@ describe("bias smoke test", () => {
   it("test_random_sessions_have_no_directional_skew", () => {
     const rnd = lcg(12345);
     const N = 500;
-    let toneSum = 0;
-    let eraSum = 0;
-    let paletteSum = 0;
+    const sums: Record<AxisId, number> = { tone: 0, era: 0, palette: 0, ornament: 0, naturalness: 0 };
     let warm = 0;
     let cool = 0;
     let traditional = 0;
@@ -127,19 +144,17 @@ describe("bias smoke test", () => {
 
     for (let n = 0; n < N; n++) {
       const { axes } = inferProfile(session(() => (rnd() < 0.5 ? 0 : 1)));
-      toneSum += axes.tone.signedStrength;
-      eraSum += axes.era.signedStrength;
-      paletteSum += axes.palette.signedStrength;
+      for (const axis of AXIS_IDS) sums[axis] += axes[axis].signedStrength;
       if (axes.tone.signedStrength > 0.34) warm++;
       else if (axes.tone.signedStrength < -0.34) cool++;
       if (axes.era.signedStrength > 0.34) traditional++;
       else if (axes.era.signedStrength < -0.34) modern++;
     }
 
-    // No pole should be systematically favored: the mean lean must sit near zero.
-    expect(Math.abs(toneSum / N)).toBeLessThan(0.1);
-    expect(Math.abs(eraSum / N)).toBeLessThan(0.1);
-    expect(Math.abs(paletteSum / N)).toBeLessThan(0.1);
+    // No pole on any axis should be systematically favored: every mean sits near zero.
+    for (const axis of AXIS_IDS) {
+      expect(Math.abs(sums[axis] / N)).toBeLessThan(0.1);
+    }
 
     // Decisive sessions should split evenly between opposing poles.
     expect(Math.abs(warm - cool) / N).toBeLessThan(0.12);

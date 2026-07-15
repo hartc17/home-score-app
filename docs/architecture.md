@@ -74,7 +74,7 @@ flowchart LR
 React plus TypeScript plus Vite plus Tailwind.
 The quiz module (`src/quiz/`) is the current surface.
 `questions.ts` is the data-driven question bank.
-`inference.ts` is a pure function from picks to a `Rubric`.
+`inference.ts` is a pure function from picks to a `Rubric`, inferring all five taste axes (tone, era, walls, ornament, naturalness) from pick consistency.
 `storage.ts` persists the anonymous rubric in the browser.
 `Quiz.tsx` and `Reveal.tsx` render the forced-choice flow and the dual reveal.
 `gates/` holds the gates form and its pure parse and validation.
