@@ -129,8 +129,8 @@ Extraction prefers schema.org JSON-LD, then Open Graph and meta tags, then a reg
 
 `POST /photos/analyze` takes the parsed facts.
 `app/photos/analyzer.py` returns preference-neutral observations and caches them by a photoset hash so re-scoring is free.
-The real Claude vision analyzer is a pluggable seam.
-It is currently a stub that flags `vision_unconfigured`; the real analyzer will be built against the vision prompt and observation schema in [scoring-contract.md](scoring-contract.md).
+The analyzer is a pluggable seam resolved at request time: `app/photos/vision.py` `ClaudeVisionAnalyzer` calls Claude vision with the [scoring-contract.md](scoring-contract.md) prompt and parses the JSON into the observation schema, gated on `ANTHROPIC_API_KEY`.
+Without a key the service falls back to a stub that flags `vision_unconfigured`, so the deterministic pipeline still runs.
 
 `POST /score` takes the rubric, the observations, and the facts.
 `app/scoring/engine.py` checks gates, computes a per-item match parameterized only by the rubric direction, aggregates each category as a weighted-average match, and normalizes across the assessed categories to a 0 to 100 total.

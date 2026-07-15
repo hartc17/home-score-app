@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 from typing import Protocol
 
 from app.schemas import ListingFacts, ListingObservations
@@ -37,11 +38,20 @@ class StubAnalyzer:
         )
 
 
+def resolve_analyzer() -> Analyzer:
+    # Use real Claude vision when configured, otherwise the honest stub.
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        from app.photos.vision import ClaudeVisionAnalyzer
+
+        return ClaudeVisionAnalyzer()
+    return StubAnalyzer()
+
+
 _CACHE: dict[str, ListingObservations] = {}
 
 
 def analyze_photoset(facts: ListingFacts, analyzer: Analyzer | None = None) -> ListingObservations:
-    active = analyzer if analyzer is not None else StubAnalyzer()
+    active = analyzer if analyzer is not None else resolve_analyzer()
     key = f"{active.model}:{photoset_hash(facts.photo_urls)}"
     cached = _CACHE.get(key)
     if cached is not None:

@@ -129,7 +129,7 @@ Live listing pages change markup often, so parse should be resilient and fail lo
 
 - [x] `scoring-contract.md` authored, and its section 5 observation schema plus the style-affinity model committed to `packages/contracts`, the Pydantic models, and the engine (`scoring_config.json` style coordinates). Live vision is the remaining piece.
 - [x] Parse returns real facts and photo URLs from a pasted public page.
-- [~] Analyze is preference-neutral and cached by photoset hash. Cache and pluggable analyzer seam done; live two-tier Claude vision to be built against `docs/scoring-contract.md` (stub flags `vision_unconfigured`).
+- [x] Analyze is preference-neutral and cached by photoset hash, with the Claude vision analyzer built against `docs/scoring-contract.md` and gated on `ANTHROPIC_API_KEY` (stub fallback). Triage-model dedup, image resizing, and an async call remain as hardening.
 - [x] Engine normalizes using `rubric.category_weights`, not hardcoded budgets.
 - [x] Categorical match tables live in config, not code (`scoring_config.json`).
 - [x] Value category computed from facts via the documented stub with a reno seam.

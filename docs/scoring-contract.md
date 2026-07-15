@@ -202,8 +202,8 @@ Every leaf observation is an object `{ value, confidence, not_observed?, flag? }
     {
       "room_type": "exterior_front",
       "observations": {
-        "architectural_style": { "value": [ {"style": "modern_farmhouse", "confidence": 0.8} ],
-                                 "confidence": 0.8 },
+        "exterior_style": { "value": [ {"style": "modern_farmhouse", "confidence": 0.8} ],
+                            "confidence": 0.8 },  // architectural style; the scored item key
         "curb_appeal": { "value": 8, "confidence": 0.8 },
         "roof_type": { "value": "gable", "confidence": 0.7 },
         "siding_material": { "value": "board_and_batten", "confidence": 0.8 },
@@ -235,7 +235,7 @@ Every leaf observation is an object `{ value, confidence, not_observed?, flag? }
 `lot_character`: wooded, landscaped, open, minimal, waterfront.
 `deck_patio`: deck_wood, deck_composite, patio_stone, patio_concrete, none.
 `garage_type`: attached, detached, carport, none.
-`interior_style` and `architectural_style` values are drawn from the vocabularies in sections 4.2 and 4.3.
+`interior_style` and `exterior_style` values (exterior style is the architectural style) are drawn from the vocabularies in sections 4.2 and 4.3, and `exterior_style` is the key the engine scores.
 
 ### 5.2 Confidence and flag rules
 
@@ -351,10 +351,11 @@ What matches this contract today:
 the gate checks, the continuous and categorical match machinery, the category normalization, the verdict tiers, the frozen 0.5 confidence rule, and the photoset-hash cache seam;
 the style-affinity match of section 6.3 with the style coordinate tables of sections 4.2 and 4.3 in `scoring_config.json`, applied to the `exterior_style` and `interior_style` items;
 the `ornament` and `naturalness` direction fields in the rubric (`RubricDirections`) and the observation schema of section 5 in `packages/contracts` and the Pydantic models, including `StyleClassification` values, `interior_style`, `ornamentation`, and `wall_lightness`;
-the quiz-side inference of all five taste axes, including `ornament` and `naturalness` (`apps/web/src/quiz/`), so a completed quiz emits every direction the scorer reads.
+the quiz-side inference of all five taste axes, including `ornament` and `naturalness` (`apps/web/src/quiz/`), so a completed quiz emits every direction the scorer reads;
+the Claude vision analyzer (`app/photos/vision.py`), which calls Claude with this section 7 prompt and parses the response into the section 5 schema, gated on `ANTHROPIC_API_KEY` with a stub fallback.
 
 What this contract still adds, to be built:
-the two-tier vision analyzer behind the existing `Analyzer` seam, using the prompt in section 7, which is the only piece that requires an Anthropic API key;
+the cheap triage-model dedup pass and image resizing of section 8 (the analyzer currently caps photo count and passes images by URL), plus an async analyzer call;
 the district and road-class gates once geospatial data is ingested.
 
 The engine reads style items via `style_items` in config, so a style observation whose value is a `StyleClassification` list is matched through the axis space rather than a fixed table.

@@ -89,5 +89,5 @@ The same listing scores differently for different users - that is the product.
 |---|---|
 | A | 🔨 Quiz -> Rubric (client-side inference, anonymous persistence). Core built; curated photo bank pending. |
 | B | 🔨 Gates + anonymous persistence + merge. Gates form, rubric merge, and versioned server-side persistence (anonymous-id keyed) done; magic-link account claim deferred by design. |
-| C | 🔨 Scoring service. Deterministic core done (config-driven engine, parse, analyze cache seam); scoring-contract.md written; live Claude vision integration still to build. |
+| C | 🔨 Scoring service. Deterministic core + style-affinity done; scoring-contract.md written; Claude vision analyzer built (gated on ANTHROPIC_API_KEY), triage/resize hardening left. |
 | D | ⏳ Persistence + comparison view |

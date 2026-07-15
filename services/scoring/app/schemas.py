@@ -83,6 +83,7 @@ class PhotoObservations(BaseModel):
 class ListingObservations(BaseModel):
     photos: list[PhotoObservations]
     overall_tone_warmth: ObservationItem | None = None
+    overall_style: ObservationItem | None = None
     condition_summary: ObservationItem | None = None
     flags: list[str]
     model: str
