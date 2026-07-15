@@ -88,6 +88,6 @@ The same listing scores differently for different users - that is the product.
 | Phase | Status |
 |---|---|
 | A | 🔨 Quiz -> Rubric (client-side inference, anonymous persistence). Core built; curated photo bank pending. |
-| B | ⏳ Gates + accounts + anonymous->account rubric merge |
+| B | 🔨 Gates + accounts + merge. Client gates form and pure rubric merge done; accounts/auth pending decision. |
 | C | 🔨 Scoring service. Deterministic core done (config-driven engine, parse, analyze cache seam); live Claude vision pending scoring-contract.md. |
 | D | ⏳ Persistence + comparison view |

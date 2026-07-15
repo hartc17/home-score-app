@@ -102,11 +102,11 @@ The merge precedence rules are the highest-risk logic in this phase, so they get
 
 ## Acceptance checklist
 
-- [ ] Auth approach chosen and documented in architecture and README.
-- [ ] `users` and `rubrics` tables migrated, models kept out of the pure engine.
-- [ ] Rubrics endpoints exist with declared response models.
-- [ ] Gates form captures stated constraints and validates at the boundary.
-- [ ] Signup is framed as the first gate question.
-- [ ] Merge composes quiz and gates without clobbering either side.
-- [ ] Rubrics are versioned and old versions remain readable.
-- [ ] Merge and versioning have direct unit tests.
+- [ ] Auth approach chosen and documented in architecture and README. Open decision, not yet made.
+- [ ] `users` and `rubrics` tables migrated, models kept out of the pure engine. Blocked on the auth decision.
+- [ ] Rubrics endpoints exist with declared response models. Blocked on the auth decision.
+- [x] Gates form captures stated constraints and validates at the boundary (`apps/web/src/gates/`).
+- [ ] Signup is framed as the first gate question. Blocked on accounts.
+- [x] Merge composes quiz and gates without clobbering either side (`apps/web/src/rubric/merge.ts`).
+- [ ] Rubrics are versioned and old versions remain readable. Server-side, blocked on persistence.
+- [x] Merge and gates parsing have direct unit tests (`merge.test.ts`, `schema.test.ts`).

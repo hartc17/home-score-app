@@ -18,8 +18,17 @@ function bandLabel(band: string): string {
   return "no lean";
 }
 
-export function Reveal({ profile, onRetake }: { profile: TasteProfile; onRetake: () => void }) {
+export function Reveal({
+  profile,
+  onRetake,
+  onAddGates,
+}: {
+  profile: TasteProfile;
+  onRetake: () => void;
+  onAddGates: () => void;
+}) {
   const { rubric, axes } = profile;
+  const gates = rubric.gates;
   const blend = Object.entries(rubric.archetype.blend).sort((a, b) => b[1] - a[1]);
   const weights = CATEGORIES.map((c) => ({
     cat: c,
@@ -90,7 +99,46 @@ export function Reveal({ profile, onRetake }: { profile: TasteProfile; onRetake:
         </div>
       </section>
 
-      <div className="mt-12 text-center">
+      <section className="mt-12 rounded-2xl border border-stone-200 bg-white px-6 py-6">
+        {gates ? (
+          <>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">Your must-haves</h2>
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full bg-stone-100 px-3 py-1 text-sm text-stone-700">
+                Up to ${gates.budget_max.toLocaleString()}
+              </span>
+              <span className="rounded-full bg-stone-100 px-3 py-1 text-sm text-stone-700">
+                {gates.min_beds}+ bd / {gates.min_baths}+ ba
+              </span>
+              {gates.districts.length > 0 && (
+                <span className="rounded-full bg-stone-100 px-3 py-1 text-sm text-stone-700">
+                  {gates.districts.join(", ")}
+                </span>
+              )}
+              {gates.exclude_main_road && (
+                <span className="rounded-full bg-stone-100 px-3 py-1 text-sm text-stone-700">No main road</span>
+              )}
+            </div>
+            <button onClick={onAddGates} className="mt-4 text-sm text-stone-500 underline hover:text-stone-700">
+              Edit must-haves
+            </button>
+          </>
+        ) : (
+          <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:justify-between sm:text-left">
+            <p className="text-stone-700">
+              House-hunting for real? Add your must-haves so we can score listings against your taste.
+            </p>
+            <button
+              onClick={onAddGates}
+              className="whitespace-nowrap rounded-full bg-stone-800 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-700"
+            >
+              Add must-haves
+            </button>
+          </div>
+        )}
+      </section>
+
+      <div className="mt-8 text-center">
         <button
           onClick={onRetake}
           className="rounded-full border border-stone-300 px-6 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100"

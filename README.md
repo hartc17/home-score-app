@@ -72,7 +72,7 @@ Detailed, actionable plans for each phase live in [docs/plans/](docs/plans/READM
 | Phase | Status | Description | Plan |
 |---|---|---|---|
 | A | 🔨 | Quiz -> Rubric (client-side inference, anonymous persistence). Core built with SVG stand-in plates; curated photo bank still pending. | [phase-a](docs/plans/phase-a-quiz-rubric.md) |
-| B | ⏳ | Gates + accounts + anonymous->account rubric merge | [phase-b](docs/plans/phase-b-gates-accounts.md) |
+| B | 🔨 | Gates + accounts + merge. Client-side gates form and pure rubric merge (compose, don't clobber) done; accounts/auth and server persistence pending an auth decision. | [phase-b](docs/plans/phase-b-gates-accounts.md) |
 | C | 🔨 | Scoring service. Deterministic core done (config-driven engine, personalized weights, parse, analyze cache seam); live Claude vision pending `scoring-contract.md`. | [phase-c](docs/plans/phase-c-scoring-service.md) |
 | D | ⏳ | Persistence + comparison view | [phase-d](docs/plans/phase-d-persistence-comparison.md) |
 
