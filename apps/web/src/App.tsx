@@ -7,6 +7,8 @@ import { mergeGates } from "./rubric/merge.ts";
 import { inferProfile, type TasteProfile } from "./quiz/inference.ts";
 import { clearRubric, loadRubric, saveRubric } from "./quiz/storage.ts";
 import { optionsByIds, type QuizOption } from "./quiz/questions.ts";
+import { saveRubricToServer } from "./api/client.ts";
+import type { Rubric } from "@houseflavor/contracts";
 
 export default function App() {
   const stored = useMemo(() => loadRubric(), []);
@@ -16,18 +18,23 @@ export default function App() {
   const [optionIds, setOptionIds] = useState<string[]>(stored?.optionIds ?? []);
   const [showGates, setShowGates] = useState(false);
 
+  function persist(rubric: Rubric, ids: string[]) {
+    const record = saveRubric(rubric, ids, new Date().toISOString());
+    if (record) void saveRubricToServer(record.anonId, rubric);
+  }
+
   function handleComplete(picks: QuizOption[]) {
     const result = inferProfile(picks);
     const ids = picks.map((p) => p.id);
     setOptionIds(ids);
-    saveRubric(result.rubric, ids, new Date().toISOString());
+    persist(result.rubric, ids);
     setProfile(result);
   }
 
   function handleGatesSubmit(gates: RubricGates) {
     if (profile === null) return;
     const merged = mergeGates(profile.rubric, gates);
-    saveRubric(merged, optionIds, new Date().toISOString());
+    persist(merged, optionIds);
     setProfile({ ...profile, rubric: merged });
     setShowGates(false);
   }

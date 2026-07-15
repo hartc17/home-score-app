@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -103,3 +105,18 @@ class ScoreRequest(BaseModel):
     rubric: Rubric
     observations: ListingObservations
     facts: ListingFacts
+
+
+class SaveRubricRequest(BaseModel):
+    anon_id: str
+    rubric: Rubric
+
+
+class StoredRubricResponse(BaseModel):
+    version: int
+    rubric: Rubric
+
+
+class RubricVersionInfo(BaseModel):
+    version: int
+    created_at: datetime

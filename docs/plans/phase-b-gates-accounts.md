@@ -102,11 +102,11 @@ The merge precedence rules are the highest-risk logic in this phase, so they get
 
 ## Acceptance checklist
 
-- [ ] Auth approach chosen and documented in architecture and README. Open decision, not yet made.
-- [ ] `users` and `rubrics` tables migrated, models kept out of the pure engine. Blocked on the auth decision.
-- [ ] Rubrics endpoints exist with declared response models. Blocked on the auth decision.
+- [x] Auth approach chosen and documented: anonymous-first persistence now, optional magic-link account claim deferred (see architecture.md).
+- [~] `users` and `rubrics` tables created, models kept out of the pure engine. Tables auto-create on startup; a migration tool replaces this when the schema stabilizes.
+- [x] Rubrics endpoints exist with declared response models (`app/api/routes/rubrics.py`).
 - [x] Gates form captures stated constraints and validates at the boundary (`apps/web/src/gates/`).
-- [ ] Signup is framed as the first gate question. Blocked on accounts.
-- [x] Merge composes quiz and gates without clobbering either side (`apps/web/src/rubric/merge.ts`).
-- [ ] Rubrics are versioned and old versions remain readable. Server-side, blocked on persistence.
-- [x] Merge and gates parsing have direct unit tests (`merge.test.ts`, `schema.test.ts`).
+- [ ] Signup is framed as the first gate question. Deferred: belongs with the magic-link claim flow.
+- [x] Merge composes quiz and gates without clobbering either side (`merge.ts` and the Python mirror `app/rubrics/merge.py`).
+- [x] Rubrics are versioned and old versions remain readable (`test_rubric_store.py`).
+- [x] Merge, gates parsing, store, and rubric endpoints have direct unit tests.

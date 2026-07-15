@@ -47,6 +47,10 @@ pip install -e ".[dev]"
 uvicorn app.main:app --reload
 ```
 
+The service reads `DATABASE_URL` (defaults to the Postgres from `infra/docker-compose.yml`).
+It auto-creates tables on startup.
+The web dev server proxies `/rubrics`, `/listings`, `/photos`, and `/score` to `http://localhost:8000`, so run both together during development.
+
 ### Database
 
 ```bash
@@ -72,7 +76,7 @@ Detailed, actionable plans for each phase live in [docs/plans/](docs/plans/READM
 | Phase | Status | Description | Plan |
 |---|---|---|---|
 | A | 🔨 | Quiz -> Rubric (client-side inference, anonymous persistence). Core built with SVG stand-in plates; curated photo bank still pending. | [phase-a](docs/plans/phase-a-quiz-rubric.md) |
-| B | 🔨 | Gates + accounts + merge. Client-side gates form and pure rubric merge (compose, don't clobber) done; accounts/auth and server persistence pending an auth decision. | [phase-b](docs/plans/phase-b-gates-accounts.md) |
+| B | 🔨 | Gates + anonymous persistence + merge. Gates form, rubric merge (compose, don't clobber), and versioned server-side persistence keyed by an anonymous id are done. Optional magic-link account claim is deferred by design. | [phase-b](docs/plans/phase-b-gates-accounts.md) |
 | C | 🔨 | Scoring service. Deterministic core done (config-driven engine, personalized weights, parse, analyze cache seam); live Claude vision pending `scoring-contract.md`. | [phase-c](docs/plans/phase-c-scoring-service.md) |
 | D | ⏳ | Persistence + comparison view | [phase-d](docs/plans/phase-d-persistence-comparison.md) |
 
@@ -85,6 +89,9 @@ Preference neutrality is a cross-cutting hard requirement spanning phases A and 
 | POST | `/listings/parse` | Fetch a pasted public listing URL and extract facts + photo URLs (JSON-LD, then meta tags, then text) |
 | POST | `/photos/analyze` | Analyze listing photos into preference-neutral observations, cached by photoset hash (real vision stubbed, pending `scoring-contract.md`) |
 | POST | `/score` | Apply a rubric to observations -> 0-100 score, verdict, due-diligence checklist, and trace |
+| POST | `/rubrics` | Persist a rubric for an anonymous id (versioned); returns the stored version |
+| GET | `/rubrics/{anon_id}` | Latest stored rubric for an anonymous id |
+| GET | `/rubrics/{anon_id}/versions` | Version history for an anonymous id |
 
 Tunable scoring tables and thresholds live in `services/scoring/app/scoring/scoring_config.json`, so tuning does not require a code change.
 See [docs/architecture.md](docs/architecture.md) for the full data flow and scoring math.

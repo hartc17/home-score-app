@@ -63,6 +63,17 @@ Two rubrics with different directions or different category weights therefore pr
 
 ## Persistence
 
-Not built yet.
-Users, versioned rubrics, listings, photo analyses, scores, and due-diligence items land in Postgres in Phases B and D.
-The `infra/docker-compose.yml` provisions Postgres for that work.
+Rubrics persist server-side with no login friction (anonymous-first).
+The quiz generates an anonymous id in the browser, and the web app posts the rubric to `POST /rubrics` keyed by that id.
+The scoring service stores it in Postgres (SQLite in tests) as a `users` row and a versioned `rubrics` row.
+Each save writes a new version, so tuning weights never rewrites a past rubric (`GET /rubrics/{anon_id}` returns the latest, `GET /rubrics/{anon_id}/versions` lists all).
+
+The SQLAlchemy models live in `app/db/models.py`, the engine and session in `app/db/base.py`, and the store functions in `app/rubrics/store.py`.
+Persistence is kept out of the pure scoring engine, which still performs no I/O.
+Server-side merge logic mirrors the web client in `app/rubrics/merge.py` (compose, do not clobber) for the future account-claim flow.
+
+Real login is deferred by design.
+An optional magic-link claim will later set `email` on the same `users` row, so an anonymous rubric is claimed without any migration.
+The `users.email` column is already nullable and unique for that path.
+Listings, photo analyses, scores, and due-diligence items land in Postgres in Phase D.
+The `infra/docker-compose.yml` provisions Postgres, and the service auto-creates tables on startup for MVP (a migration tool replaces this when the schema stabilizes).
