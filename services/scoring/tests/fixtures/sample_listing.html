@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>42 Maple Street, Saratoga Springs, NY</title>
+    <meta property="og:title" content="42 Maple Street, Saratoga Springs, NY 12866" />
+    <meta property="og:image" content="https://cdn.example.com/photos/hero.jpg" />
+    <meta property="og:image" content="https://cdn.example.com/photos/kitchen.jpg" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SingleFamilyResidence",
+        "name": "42 Maple Street",
+        "image": [
+          "https://cdn.example.com/photos/living.jpg",
+          "https://cdn.example.com/photos/exterior.jpg"
+        ],
+        "numberOfBedrooms": 4,
+        "numberOfBathroomsTotal": 3,
+        "yearBuilt": "1998",
+        "floorSize": { "@type": "QuantitativeValue", "value": "2450", "unitCode": "FTK" },
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "42 Maple Street",
+          "addressLocality": "Saratoga Springs",
+          "addressRegion": "NY",
+          "postalCode": "12866"
+        },
+        "offers": { "@type": "Offer", "price": "575000", "priceCurrency": "USD" }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>42 Maple Street</h1>
+    <p>4 beds | 3 baths | 2,450 sqft | Built in 1998</p>
+    <p>Annual taxes: $8,200</p>
+    <img src="https://cdn.example.com/photos/living.jpg" alt="living room" />
+    <img src="https://cdn.example.com/photos/bedroom.webp" alt="bedroom" />
+    <img src="/relative/ignored.jpg" alt="ignored relative" />
+  </body>
+</html>
