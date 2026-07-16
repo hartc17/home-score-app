@@ -58,3 +58,32 @@ export function loadRubric(store: KeyValueStore | null = defaultStore()): Stored
 export function clearRubric(store: KeyValueStore | null = defaultStore()): void {
   store?.removeItem(KEY);
 }
+
+const SESSION_KEY = "houseflavor.session.v1";
+
+export interface StoredSession {
+  session: string;
+  email: string;
+}
+
+export function saveSession(
+  session: StoredSession,
+  store: KeyValueStore | null = defaultStore(),
+): void {
+  store?.setItem(SESSION_KEY, JSON.stringify(session));
+}
+
+export function loadSession(store: KeyValueStore | null = defaultStore()): StoredSession | null {
+  const raw = store?.getItem(SESSION_KEY) ?? null;
+  if (raw === null) return null;
+  try {
+    return JSON.parse(raw) as StoredSession;
+  } catch {
+    store?.removeItem(SESSION_KEY);
+    return null;
+  }
+}
+
+export function clearSession(store: KeyValueStore | null = defaultStore()): void {
+  store?.removeItem(SESSION_KEY);
+}

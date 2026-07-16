@@ -25,6 +25,20 @@ class User(Base):
     )
 
 
+class LoginToken(Base):
+    __tablename__ = "login_tokens"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    # Only the hash is stored, so a database read never yields a usable link.
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    email: Mapped[str] = mapped_column(String(320), index=True)
+    # The anonymous rubric to claim onto the account when the link is verified.
+    claim_anon_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class RubricRow(Base):
     __tablename__ = "rubrics"
     __table_args__ = (UniqueConstraint("user_id", "version", name="uq_rubric_user_version"),)

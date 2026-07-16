@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class RubricGates(BaseModel):
@@ -138,6 +138,44 @@ class ScoreRunRequest(BaseModel):
 class ScoreRunResponse(BaseModel):
     listing_id: int
     score: ScoreResult
+
+
+class MagicLinkRequest(BaseModel):
+    email: str
+    anon_id: str | None = None
+
+    @field_validator("email")
+    @classmethod
+    def _normalize_email(cls, value: str) -> str:
+        email = value.strip().lower()
+        if "@" not in email or "." not in email.split("@")[-1]:
+            raise ValueError("invalid email")
+        return email
+
+
+class MagicLinkResponse(BaseModel):
+    sent: bool
+    # Populated only by the console (non-production) sender so local dev and the
+    # E2E can complete the loop without a mail provider. Never set in production.
+    dev_link: str | None = None
+
+
+class VerifyRequest(BaseModel):
+    token: str
+
+
+class SessionResponse(BaseModel):
+    email: str
+    anon_id: str
+    session: str
+    rubric: Rubric | None = None
+    rubric_version: int | None = None
+
+
+class MeResponse(BaseModel):
+    email: str
+    anon_id: str
+    rubric: Rubric | None = None
 
 
 class ScoredListing(BaseModel):

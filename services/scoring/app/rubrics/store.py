@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db.models import RubricRow, User
@@ -36,10 +36,9 @@ def rubric_from_row(row: RubricRow) -> Rubric:
     )
 
 
-def save_rubric(db: Session, anon_id: str, rubric: Rubric) -> tuple[int, Rubric]:
-    user = _get_or_create_user(db, anon_id)
-    existing = [r.version for r in user.rubrics]
-    version = (max(existing) + 1) if existing else 1
+def save_rubric_for_user(db: Session, user: User, rubric: Rubric) -> tuple[int, Rubric]:
+    top = db.scalar(select(func.max(RubricRow.version)).where(RubricRow.user_id == user.id))
+    version = (top + 1) if top is not None else 1
     row = RubricRow(
         user_id=user.id,
         version=version,
@@ -54,6 +53,17 @@ def save_rubric(db: Session, anon_id: str, rubric: Rubric) -> tuple[int, Rubric]
     db.add(row)
     db.commit()
     return version, rubric_from_row(row)
+
+
+def save_rubric(db: Session, anon_id: str, rubric: Rubric) -> tuple[int, Rubric]:
+    return save_rubric_for_user(db, _get_or_create_user(db, anon_id), rubric)
+
+
+def latest_rubric_for_user(db: Session, user: User) -> Rubric | None:
+    row = db.scalar(
+        select(RubricRow).where(RubricRow.user_id == user.id).order_by(RubricRow.version.desc()).limit(1)
+    )
+    return rubric_from_row(row) if row is not None else None
 
 
 def get_latest_rubric_row(db: Session, anon_id: str) -> RubricRow | None:

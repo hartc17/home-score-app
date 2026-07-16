@@ -40,6 +40,7 @@ npm run dev --workspace=apps/web
 The web app opens on the forced-choice quiz.
 Answering it infers a taste rubric (`packages/contracts` `Rubric`), persists it anonymously in the browser, and shows the archetype reveal.
 The quiz module lives in `apps/web/src/quiz/`: `questions.ts` (data-driven bank), `inference.ts` (pure picks-to-rubric), `storage.ts` (anonymous persistence), `scene/` (the token-driven parametric illustration engine: `tokens.ts` palettes, `spec.ts` scene ids, `Scene.tsx` renderer), `OptionImage.tsx` (the scene-to-curated-photo swap seam), `shareCard.ts` (the reveal's shareable image export), and the `Quiz`/`Reveal` components.
+An account bar (`apps/web/src/account/`) lets a buyer save their profile: "Save your profile" emails a magic link, and landing on that link signs them in so their rubric follows them across devices.
 From the reveal, "Share my flavor" exports an image card of the archetype, and "Score listings" opens the comparison view (`apps/web/src/compare/`), where pasting a listing URL scores it against the rubric and ranks it against previously scored listings.
 
 ### Scoring service
@@ -84,6 +85,7 @@ Detailed, actionable plans for each phase live in [docs/plans/](docs/plans/READM
 | B | 🔨 | Gates + anonymous persistence + merge. Gates form, rubric merge (compose, don't clobber), and versioned server-side persistence keyed by an anonymous id are done. Optional magic-link account claim is deferred by design. | [phase-b](docs/plans/phase-b-gates-accounts.md) |
 | C | 🔨 | Scoring service. Deterministic core done (config-driven engine, personalized weights, style-affinity, parse); [scoring contract](docs/scoring-contract.md) written; Claude vision analyzer built (gated on `ANTHROPIC_API_KEY`) with the two-tier pass wired: photos are resized to a ~1300px long edge and a cheap triage model dedups near-duplicate rooms before the strong analysis pass. A live cost/latency check still needs a real key. | [phase-c](docs/plans/phase-c-scoring-service.md) |
 | D | 🔨 | Persistence + comparison view. Listing, photo-analysis, score, and due-diligence tables; a score-run endpoint that gets-or-creates a listing, reuses the cached photo analysis, and records a per-rubric score with its rubric version; and a comparison view that ranks a user's scored listings. Keyed by the anonymous id. | [phase-d](docs/plans/phase-d-persistence-comparison.md) |
+| E | 🔨 | Accounts + magic-link claim. Passwordless sign-in emails a one-time link (real provider gated on `RESEND_API_KEY`, console sender otherwise); verifying it claims the anonymous rubric onto the account, composing forward when the email already has one, and issues a signed session. A live email send still needs a provider key. | [phase-e](docs/plans/phase-e-accounts.md) |
 
 Preference neutrality is a cross-cutting hard requirement spanning phases A and C: see [docs/plans/preference-neutrality.md](docs/plans/preference-neutrality.md).
 
@@ -99,6 +101,9 @@ Preference neutrality is a cross-cutting hard requirement spanning phases A and 
 | GET | `/rubrics/{anon_id}/versions` | Version history for an anonymous id |
 | POST | `/scores/run` | Score a pasted listing URL against the caller's latest rubric and persist the run (get-or-create listing, reuse cached photo analysis, record a per-rubric score with its rubric version) |
 | GET | `/scores/{anon_id}` | The caller's scored listings, ranked by total (newest score per listing) |
+| POST | `/auth/request` | Email a one-time magic-link sign-in for an email + anon id. Uses a real provider when `RESEND_API_KEY` is set, else a console sender that returns the link as `dev_link` for local use |
+| POST | `/auth/verify` | Verify a magic-link token: claim the anonymous rubric onto the account (compose-forward when the email already has one) and return a signed session |
+| GET | `/auth/me` | The signed-in user and their latest rubric, from a `Bearer` session token |
 
 Tunable scoring tables and thresholds live in `services/scoring/app/scoring/scoring_config.json`, so tuning does not require a code change.
 See [docs/architecture.md](docs/architecture.md) for the full data flow and scoring math.

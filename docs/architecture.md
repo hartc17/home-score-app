@@ -81,6 +81,7 @@ The quiz module (`src/quiz/`) is the current surface.
 `OptionImage.tsx` is the single swap seam: it renders an option's curated photo when one is set and the parametric scene otherwise.
 `shareCard.ts` exports the reveal as an Open-Graph-sized image card, via the Web Share API where available and a PNG download otherwise.
 `compare/Compare.tsx` ranks a user's scored listings.
+`account/Account.tsx` is the sign-in bar: it requests a magic link, and `App.tsx` verifies a `?token=` landing, stores the signed session, and strips the token from the URL.
 `gates/` holds the gates form and its pure parse and validation.
 `rubric/merge.ts` composes the quiz rubric with gates without clobbering either side.
 `api/client.ts` posts the rubric to the scoring service, best effort.
@@ -271,6 +272,14 @@ erDiagram
     string text
     bool checked
   }
+  LOGIN_TOKENS {
+    int id PK
+    string token_hash UK "sha256 of the one-time link"
+    string email
+    string claim_anon_id "nullable, rubric to claim"
+    datetime expires_at
+    datetime consumed_at "nullable, single-use"
+  }
 ```
 
 ### Rubric lifecycle
@@ -282,12 +291,13 @@ stateDiagram-v2
   Anonymous --> Persisted: POST /rubrics (v1)
   AnonymousGated --> Persisted: POST /rubrics (v2)
   Persisted --> Persisted: retune, new version
-  Persisted --> Claimed: magic-link claim (planned)
-  Claimed --> Claimed: compose-forward on re-quiz (Phase E)
+  Persisted --> Claimed: magic-link claim
+  Claimed --> Claimed: compose-forward on second-device sign-in
   Claimed --> [*]
 ```
 
-Real login is deferred by design.
-An optional magic-link claim will later set `email` on the same `users` row, so an anonymous rubric is claimed without any migration.
-The `users.email` column is already nullable and unique for that path.
+Sign-in is passwordless (Phase E, `app/auth/`).
+`POST /auth/request` mints a one-time login token, stores only its hash in `login_tokens`, and emails the link through a pluggable sender (a real provider when `RESEND_API_KEY` is set, otherwise a console sender that returns the link as `dev_link` for local use).
+`POST /auth/verify` consumes the token and claims the account: with no prior account it sets `email` on the same anonymous `users` row, so the rubric is claimed with no migration; when the email already has an account it composes the device's latest rubric forward onto that account as a new version (`compose_forward`, keeping the fresh quiz taste and the account's gates).
+It returns a stateless signed session token (HMAC of the user id), which `GET /auth/me` verifies from a `Bearer` header.
 The `infra/docker-compose.yml` provisions Postgres, and the service auto-creates tables on startup for MVP (a migration tool replaces this when the schema stabilizes).

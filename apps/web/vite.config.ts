@@ -12,6 +12,7 @@ export default defineConfig({
       "/photos": backend,
       "/scores": backend,
       "/score": backend,
+      "/auth": backend,
     },
   },
 });

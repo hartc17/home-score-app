@@ -12,7 +12,7 @@ This roadmap places them in context and enumerates the future phases and cross-c
 | B | Gates + anonymous persistence + merge | Built; magic-link claim deferred |
 | C | Scoring service | Core + two-tier vision (resize + triage) built; live cost check needs a key |
 | D | Persistence + comparison | Built; keyed by anonymous id |
-| E | Accounts + magic-link claim | Not planned in detail |
+| E | Accounts + magic-link claim | Built; live email send needs a provider key |
 | F | Live vision + style-affinity | Not planned in detail |
 | G | Comps + reno estimator (full value) | Not planned in detail |
 | H | Geospatial gates (PostGIS) | Not planned in detail |
@@ -34,8 +34,8 @@ flowchart TB
   classDef wip fill:#fff2cc,stroke:#c93,color:#111;
   classDef future fill:#eeeeee,stroke:#999,stroke-dasharray:4 3,color:#111;
   class A done;
-  class B,C,D wip;
-  class E,F,G,H,I future;
+  class B,C,D,E wip;
+  class F,G,H,I future;
 ```
 
 ## Finishing the current phases
@@ -70,16 +70,16 @@ Listing facts and photo analyses are shared across users because they are prefer
 Scoring is keyed by anonymous id, so it works before any account exists; the magic-link account claim stays deferred to Phase E.
 Dependency: Phase C `ScoreResult`, Phase B persistence.
 
+### Phase E: accounts and the magic-link claim (built)
+
+Passwordless sign-in gives a buyer a real account so their rubric follows them across devices (`app/auth/`, `apps/web/src/account/`).
+`POST /auth/request` mints a one-time token, stores only its hash, and emails the link through a pluggable sender: a real provider when `RESEND_API_KEY` is set, otherwise a console sender that returns the link as `dev_link` for local use.
+`POST /auth/verify` consumes the token and claims the account: with no prior account it sets `email` on the anonymous `users` row (no migration); when the email already has an account it composes the device's latest rubric forward onto it as a new version, keeping the fresh quiz taste and the account's gates.
+The session is a stateless HMAC-signed token verified by `GET /auth/me`.
+Resolved open questions: a signed bearer token (not a cookie) for the SPA; a fifteen-minute link expiry with one outstanding link per email (a new request retires the prior one).
+What remains needs a provider key rather than more code: a live email send, and IP-level rate limiting and full multi-device reconciliation are deferred.
+
 ## Future phases (not yet planned in detail)
-
-### Phase E: accounts and the magic-link claim
-
-Give a buyer a real account so their rubric follows them across devices.
-Passwordless magic-link: the service emails a signed one-time link, verifies it, and sets `email` on the existing anonymous `users` row, claiming the anonymous rubric with no migration.
-The account-claim merge composes the anonymous quiz rubric forward into the account rubric without clobbering either side (build this with Phase E rather than carrying it as unused code now).
-Dependency: an email sender (for example Resend or SES); the schema and merge logic already exist.
-Open questions: session strategy (signed cookie versus token), link expiry and rate limiting, multi-device anonymous-id reconciliation.
-Size: medium.
 
 ### Phase F: live vision and style-affinity
 

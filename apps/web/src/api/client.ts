@@ -1,4 +1,11 @@
-import type { Rubric, ScoredListing, ScoreRunResponse } from "@houseflavor/contracts";
+import type {
+  MagicLinkResponse,
+  MeResponse,
+  Rubric,
+  ScoredListing,
+  ScoreRunResponse,
+  SessionResponse,
+} from "@houseflavor/contracts";
 
 // Best-effort server persistence. A missing or failing backend must never block
 // the quiz experience, so callers treat a null result as "kept locally only".
@@ -35,5 +42,35 @@ export async function runScore(anonId: string, url: string): Promise<ScoreRunRes
 export async function listScores(anonId: string): Promise<ScoredListing[]> {
   const response = await fetch(`/scores/${encodeURIComponent(anonId)}`);
   if (!response.ok) return [];
+  return response.json();
+}
+
+export class AuthError extends Error {}
+
+export async function requestMagicLink(email: string, anonId: string | null): Promise<MagicLinkResponse> {
+  const response = await fetch("/auth/request", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, anon_id: anonId }),
+  });
+  if (!response.ok) {
+    throw new AuthError(response.status === 422 ? "Enter a valid email address" : "Could not send the link");
+  }
+  return response.json();
+}
+
+export async function verifyMagicLink(token: string): Promise<SessionResponse> {
+  const response = await fetch("/auth/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  if (!response.ok) throw new AuthError("This sign-in link is invalid or has expired");
+  return response.json();
+}
+
+export async function fetchMe(session: string): Promise<MeResponse | null> {
+  const response = await fetch("/auth/me", { headers: { Authorization: `Bearer ${session}` } });
+  if (!response.ok) return null;
   return response.json();
 }

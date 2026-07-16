@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Rubric } from "@houseflavor/contracts";
-import { listScores, runScore, saveRubricToServer, ScoreError } from "./client.ts";
+import {
+  AuthError,
+  fetchMe,
+  listScores,
+  requestMagicLink,
+  runScore,
+  saveRubricToServer,
+  ScoreError,
+  verifyMagicLink,
+} from "./client.ts";
 
 const rubric: Rubric = {
   version: "1.0",
@@ -70,5 +79,59 @@ describe("listScores", () => {
   it("test_returns_empty_on_error", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, json: async () => ({}) }));
     expect(await listScores("anon-9")).toEqual([]);
+  });
+});
+
+describe("requestMagicLink", () => {
+  it("test_posts_email_and_anon_id", async () => {
+    const body = { sent: true, dev_link: "http://x/?token=abc" };
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => body });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await requestMagicLink("a@b.com", "anon-9");
+
+    expect(result).toEqual(body);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("/auth/request");
+    expect(JSON.parse(init.body)).toEqual({ email: "a@b.com", anon_id: "anon-9" });
+  });
+
+  it("test_throws_auth_error_on_invalid_email", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 422 }));
+    await expect(requestMagicLink("bad", "anon-9")).rejects.toThrow(AuthError);
+  });
+});
+
+describe("verifyMagicLink", () => {
+  it("test_posts_token_and_returns_session", async () => {
+    const body = { email: "a@b.com", anon_id: "anon-9", session: "s.tok", rubric: null, rubric_version: 1 };
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => body });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await verifyMagicLink("tok-123");
+
+    expect(result).toEqual(body);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ token: "tok-123" });
+  });
+
+  it("test_throws_auth_error_on_bad_token", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 400 }));
+    await expect(verifyMagicLink("nope")).rejects.toThrow(AuthError);
+  });
+});
+
+describe("fetchMe", () => {
+  it("test_sends_bearer_and_returns_profile", async () => {
+    const body = { email: "a@b.com", anon_id: "anon-9", rubric: null };
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => body });
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect(await fetchMe("s.tok")).toEqual(body);
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe("Bearer s.tok");
+  });
+
+  it("test_returns_null_when_unauthorized", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
+    expect(await fetchMe("s.tok")).toBeNull();
   });
 });
