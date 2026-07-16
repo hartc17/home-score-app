@@ -55,7 +55,9 @@ uvicorn app.main:app --reload
 
 The service reads `DATABASE_URL` (defaults to the Postgres from `infra/docker-compose.yml`).
 It auto-creates tables on startup.
-The web dev server proxies `/rubrics`, `/listings`, `/photos`, `/score`, and `/scores` to `http://localhost:8000`, so run both together during development.
+The web dev server proxies `/rubrics`, `/listings`, `/photos`, `/score`, `/scores`, and `/auth` to `http://localhost:8000`, so run both together during development.
+
+Production configuration (`HOUSEFLAVOR_ENV=production`) fails closed on unsafe auth defaults: the service refuses to sign a session unless `HOUSEFLAVOR_SESSION_SECRET` is set to a non-default value, and `/auth/request` errors rather than returning a link unless a real mail provider (`RESEND_API_KEY`) is configured. In development both fall back to safe local defaults (a console sender that returns the link as `dev_link`).
 
 ### Database
 

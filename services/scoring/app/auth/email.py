@@ -5,6 +5,8 @@ from typing import Protocol
 
 import httpx
 
+from app.settings import is_production
+
 
 # The email sender is a pluggable seam, mirroring the vision analyzer: a real
 # provider is used when configured, otherwise a console sender that records the
@@ -55,4 +57,9 @@ def resolve_email_sender() -> EmailSender:
     if api_key:
         sender = os.environ.get("HOUSEFLAVOR_EMAIL_FROM", "HouseFlavor <login@houseflavor.app>")
         return ResendEmailSender(api_key, sender)
+    # Fail closed: the console sender returns the link to the caller, which is
+    # only safe in development. In production a missing provider is an error, not
+    # a silent fallback that would hand out working sign-in links.
+    if is_production():
+        raise RuntimeError("no email provider configured; set RESEND_API_KEY in production")
     return console_sender

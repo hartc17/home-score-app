@@ -7,11 +7,14 @@ import json
 import os
 import secrets
 
+from app.settings import is_production
+
 # Two kinds of token. A login token is a random one-time secret emailed as a
 # magic link; only its hash is persisted. A session token is a stateless signed
 # claim of a user id, verified by HMAC with a server secret.
 
 SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
+_DEFAULT_SECRET = "dev-insecure-session-secret"
 
 
 def new_login_token() -> tuple[str, str]:
@@ -24,7 +27,13 @@ def hash_login_token(raw: str) -> str:
 
 
 def _secret() -> bytes:
-    return os.environ.get("HOUSEFLAVOR_SESSION_SECRET", "dev-insecure-session-secret").encode()
+    # Fail closed: a production deploy must supply its own secret, otherwise
+    # session tokens would be signed with a key that ships in the repo and any
+    # user id could be forged.
+    value = os.environ.get("HOUSEFLAVOR_SESSION_SECRET")
+    if is_production() and (not value or value == _DEFAULT_SECRET):
+        raise RuntimeError("HOUSEFLAVOR_SESSION_SECRET must be set to a non-default value in production")
+    return (value or _DEFAULT_SECRET).encode()
 
 
 def _b64(data: bytes) -> str:

@@ -50,7 +50,14 @@ Token hashing, session signing, expiry, and tamper rejection are unit tested.
 The claim and compose-forward paths are tested against an in-memory database, including the second-device merge and version bump.
 The full HTTP flow (request, verify with the returned dev link, and `me`) is covered with the test client, and an end-to-end browser test drives quiz to sign-in to a persisted session.
 
+## Failing closed in production
+
+When `HOUSEFLAVOR_ENV=production`, the two dev conveniences become hard errors so a misconfigured deploy cannot leak access.
+Signing a session requires `HOUSEFLAVOR_SESSION_SECRET` to be set to a non-default value, otherwise `_secret` raises rather than signing with the key that ships in the repo.
+`/auth/request` requires a real provider (`RESEND_API_KEY`); without one it raises rather than falling back to the console sender, so the magic link is never returned to the caller as `dev_link`.
+
 ## Deferred
 
 A live email send needs a provider key.
-IP-level rate limiting and full multi-device anonymous-id reconciliation are deferred beyond the single-outstanding-link-per-email rule.
+IP-level rate limiting on `/auth/request` and full multi-device anonymous-id reconciliation are deferred beyond the single-outstanding-link-per-email rule.
+The SSRF exposure in the listing and photo fetch (a pasted URL is fetched server-side with only a scheme check) is tracked as a separate hardening item, not part of the auth surface.
