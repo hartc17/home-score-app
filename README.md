@@ -66,6 +66,19 @@ cd infra
 docker compose up -d
 ```
 
+## Run with Docker (full stack)
+
+The whole app (Postgres, the FastAPI scoring service, and the web app served by nginx) runs from the root compose file:
+
+```bash
+docker compose up --build
+# then open http://localhost:8080
+```
+
+nginx serves the built web bundle and reverse-proxies the API paths (`/rubrics`, `/listings`, `/photos`, `/score`, `/scores`, `/auth`) to the scoring service, so there is one origin and no CORS.
+This runs in development mode: the console email sender returns the magic link as `dev_link`, and the default session secret is used.
+For a production-like run set `HOUSEFLAVOR_ENV=production` on the `scoring` service and provide `HOUSEFLAVOR_SESSION_SECRET` and `RESEND_API_KEY` (the service otherwise fails closed, as above).
+
 ## Running tests
 
 ```bash

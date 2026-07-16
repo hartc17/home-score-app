@@ -1,0 +1,44 @@
+# Full-stack run: Postgres, the FastAPI scoring service, and the web app served
+# by nginx which reverse-proxies the API paths to the service.
+#
+#   docker compose up --build   then open http://localhost:8080
+#
+# This runs in development mode (console email sender returns the magic link as
+# dev_link, default session secret). For a production-like run set
+# HOUSEFLAVOR_ENV=production and provide HOUSEFLAVOR_SESSION_SECRET and
+# RESEND_API_KEY on the scoring service.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: houseflavor
+      POSTGRES_PASSWORD: houseflavor
+      POSTGRES_DB: houseflavor
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U houseflavor"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  scoring:
+    build: ./services/scoring
+    environment:
+      DATABASE_URL: postgresql+psycopg://houseflavor:houseflavor@postgres:5432/houseflavor
+      HOUSEFLAVOR_APP_URL: http://localhost:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - scoring
+
+volumes:
+  postgres_data:
