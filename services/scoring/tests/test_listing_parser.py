@@ -13,6 +13,7 @@ def test_parse_extracts_core_facts_from_jsonld():
     assert facts.baths == 3
     assert facts.sqft == 2450
     assert facts.year_built == 1998
+    assert facts.taxes_annual == 8200
     assert facts.home_type == "single_family"
     assert facts.address == "42 Maple Street, Saratoga Springs, NY, 12866"
 

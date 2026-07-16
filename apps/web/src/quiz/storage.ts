@@ -46,7 +46,13 @@ export function loadRubric(store: KeyValueStore | null = defaultStore()): Stored
   if (store === null) return null;
   const raw = store.getItem(KEY);
   if (raw === null) return null;
-  return JSON.parse(raw) as StoredRubric;
+  try {
+    return JSON.parse(raw) as StoredRubric;
+  } catch {
+    // A corrupted or legacy value must not crash the app on startup; drop it.
+    store.removeItem(KEY);
+    return null;
+  }
 }
 
 export function clearRubric(store: KeyValueStore | null = defaultStore()): void {

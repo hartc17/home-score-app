@@ -163,11 +163,17 @@ class ClaudeVisionAnalyzer:
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": content}],
         )
-        return self._parse(response, len(photos))
+        return self._parse(response)
 
-    def _parse(self, response: Any, photo_count: int) -> ListingObservations:
+    def _parse(self, response: Any) -> ListingObservations:
         text = "".join(block.text for block in response.content if getattr(block, "type", None) == "text")
-        data = json.loads(_extract_json(text))
+        model = getattr(response, "model", self.model)
+        try:
+            data = json.loads(_extract_json(text))
+        except json.JSONDecodeError:
+            return ListingObservations(
+                photos=[], flags=["vision_unparseable"], model=model, schema_version=SCHEMA_VERSION
+            )
         photos = [
             PhotoObservations(
                 room_type=p.get("room_type", "other"),
@@ -182,6 +188,6 @@ class ClaudeVisionAnalyzer:
             overall_style=_opt_item(data, "overall_style"),
             condition_summary=_opt_item(data, "condition_summary"),
             flags=[f for f in data.get("flags", []) if isinstance(f, str)],
-            model=getattr(response, "model", self.model),
+            model=model,
             schema_version=data.get("schema_version", SCHEMA_VERSION),
         )

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import type { RubricGates } from "@houseflavor/contracts";
 import { EMPTY_GATES_FORM, HOME_TYPES, parseGates, validateGates, type GatesForm as GatesFormState } from "./schema.ts";
 
@@ -38,14 +38,15 @@ export function GatesForm({
     }));
   }
 
-  function submit() {
+  function submit(event: FormEvent) {
+    event.preventDefault();
     const found = validateGates(form);
     setErrors(found);
     if (Object.keys(found).length === 0) onSubmit(parseGates(form));
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-12">
+    <form onSubmit={submit} className="mx-auto max-w-2xl px-6 py-12">
       <h1 className="mb-1 text-3xl font-bold text-stone-800">Your must-haves</h1>
       <p className="mb-8 text-stone-500">
         These are the hard limits we will never score around. Everything else is your taste.
@@ -61,9 +62,15 @@ export function GatesForm({
               value={form[field.key]}
               placeholder={field.placeholder}
               onChange={(e) => set(field.key, e.target.value)}
+              aria-invalid={errors[field.key] ? true : undefined}
+              aria-describedby={errors[field.key] ? `${field.key}-error` : undefined}
               className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:border-stone-500 focus:outline-none"
             />
-            {errors[field.key] && <span className="mt-1 block text-xs text-red-600">{errors[field.key]}</span>}
+            {errors[field.key] && (
+              <span id={`${field.key}-error`} className="mt-1 block text-xs text-red-600">
+                {errors[field.key]}
+              </span>
+            )}
           </label>
         ))}
       </div>
@@ -101,7 +108,11 @@ export function GatesForm({
             );
           })}
         </div>
-        {errors.home_types && <span className="mt-1 block text-xs text-red-600">{errors.home_types}</span>}
+        {errors.home_types && (
+          <span id="home_types-error" className="mt-1 block text-xs text-red-600">
+            {errors.home_types}
+          </span>
+        )}
       </div>
 
       <label className="mt-5 flex items-center gap-2">
@@ -116,15 +127,15 @@ export function GatesForm({
 
       <div className="mt-10 flex items-center gap-3">
         <button
-          onClick={submit}
+          type="submit"
           className="rounded-full bg-stone-800 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-stone-700"
         >
           Save must-haves
         </button>
-        <button onClick={onCancel} className="text-sm text-stone-500 hover:text-stone-700">
+        <button type="button" onClick={onCancel} className="text-sm text-stone-500 hover:text-stone-700">
           Back
         </button>
       </div>
-    </div>
+    </form>
   );
 }

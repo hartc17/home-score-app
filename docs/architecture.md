@@ -194,7 +194,8 @@ Each save writes a new version, so tuning weights never rewrites a past rubric (
 
 The SQLAlchemy models live in `app/db/models.py`, the engine and session in `app/db/base.py`, and the store functions in `app/rubrics/store.py`.
 Persistence is kept out of the pure scoring engine, which still performs no I/O.
-Server-side merge logic mirrors the web client in `app/rubrics/merge.py` (compose, do not clobber) for the future account-claim flow.
+`merge_gates` (in `app/rubrics/merge.py`, mirroring the web client) adds stated gates without overwriting the quiz-derived rubric parts.
+The anonymous-to-account compose-forward merge is deferred with Phase E rather than kept as unused code.
 
 ### Data model
 
@@ -268,7 +269,7 @@ stateDiagram-v2
   AnonymousGated --> Persisted: POST /rubrics (v2)
   Persisted --> Persisted: retune, new version
   Persisted --> Claimed: magic-link claim (planned)
-  Claimed --> Claimed: compose_forward on re-quiz
+  Claimed --> Claimed: compose-forward on re-quiz (Phase E)
   Claimed --> [*]
 ```
 

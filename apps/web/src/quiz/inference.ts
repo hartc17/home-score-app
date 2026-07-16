@@ -185,14 +185,20 @@ export function inferProfile(picks: QuizOption[]): TasteProfile {
     return Math.max(WEIGHT_FLOOR, BASE_WEIGHT + WEIGHT_SPREAD * (emphasis - 0.5));
   });
   const categoryInts = apportion(100, rawCategory, 0);
-  const categoryWeights = Object.fromEntries(
-    CATEGORIES.map((cat, i) => [cat, categoryInts[i]]),
-  ) as unknown as CategoryWeights;
+  const weightOf = (cat: Category): number => categoryInts[CATEGORIES.indexOf(cat)];
+  const categoryWeights: CategoryWeights = {
+    bones: weightOf("bones"),
+    warmth: weightOf("warmth"),
+    finish: weightOf("finish"),
+    outdoor: weightOf("outdoor"),
+    value: weightOf("value"),
+    age: weightOf("age"),
+  };
 
   const itemWeights: Record<string, number> = {};
   for (const cat of SIGNAL_CATEGORIES) {
     const items = CATEGORY_ITEMS[cat];
-    const budget = (categoryWeights as unknown as Record<Category, number>)[cat];
+    const budget = categoryWeights[cat];
     const raw = items.map((t) => 0.5 + affinity(t, picks));
     const parts = apportion(budget, raw, 2);
     items.forEach((t, i) => {

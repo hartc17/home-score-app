@@ -69,7 +69,7 @@ Size: medium.
 
 Give a buyer a real account so their rubric follows them across devices.
 Passwordless magic-link: the service emails a signed one-time link, verifies it, and sets `email` on the existing anonymous `users` row, claiming the anonymous rubric with no migration.
-The account-claim merge uses the existing `compose_forward` (compose, do not clobber).
+The account-claim merge composes the anonymous quiz rubric forward into the account rubric without clobbering either side (build this with Phase E rather than carrying it as unused code now).
 Dependency: an email sender (for example Resend or SES); the schema and merge logic already exist.
 Open questions: session strategy (signed cookie versus token), link expiry and rate limiting, multi-device anonymous-id reconciliation.
 Size: medium.

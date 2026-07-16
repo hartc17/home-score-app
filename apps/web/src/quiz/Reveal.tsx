@@ -30,10 +30,7 @@ export function Reveal({
   const { rubric, axes } = profile;
   const gates = rubric.gates;
   const blend = Object.entries(rubric.archetype.blend).sort((a, b) => b[1] - a[1]);
-  const weights = CATEGORIES.map((c) => ({
-    cat: c,
-    weight: (rubric.category_weights as unknown as Record<Category, number>)[c],
-  }));
+  const weights = CATEGORIES.map((c) => ({ cat: c, weight: rubric.category_weights[c] }));
   const maxWeight = Math.max(...weights.map((w) => w.weight));
 
   return (

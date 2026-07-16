@@ -1,42 +1,30 @@
 from app.schemas import (
     CategoryWeights,
-    ListingFacts,
     ListingObservations,
     ObservationItem,
-    PhotoObservations,
     Rubric,
-    RubricArchetype,
     RubricDirections,
     RubricGates,
 )
 from app.scoring.config import get_config
 from app.scoring.engine import score
+from tests.builders import make_facts as _facts
+from tests.builders import make_rubric, single_photo
 
 
-def _rubric(item_weights, directions, category_weights=None, gates=None) -> Rubric:
-    return Rubric(
-        version="1.0",
-        gates=gates,
-        category_weights=category_weights
-        or CategoryWeights(bones=20, warmth=20, finish=20, outdoor=20, value=10, age=10),
-        item_weights=item_weights,
-        directions=directions,
-        archetype=RubricArchetype(name="x", blend={"x": 1.0}),
-        confidence={},
+def _rubric(
+    item_weights: dict[str, float],
+    directions: RubricDirections,
+    category_weights: CategoryWeights | None = None,
+    gates: RubricGates | None = None,
+) -> Rubric:
+    return make_rubric(
+        item_weights=item_weights, directions=directions, category_weights=category_weights, gates=gates
     )
 
 
-def _obs(observations: dict[str, ObservationItem], flags=None) -> ListingObservations:
-    return ListingObservations(
-        photos=[PhotoObservations(room_type="room", observations=observations)],
-        flags=flags or [],
-        model="stub",
-        schema_version="1.0",
-    )
-
-
-def _facts(**overrides) -> ListingFacts:
-    return ListingFacts(url="https://example.com", photo_urls=[], **overrides)
+def _obs(observations: dict[str, ObservationItem], flags: list[str] | None = None) -> ListingObservations:
+    return single_photo(observations, flags=flags)
 
 
 def test_score_two_rubrics_opposite_tone_produce_different_totals():

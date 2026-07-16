@@ -48,6 +48,7 @@ def resolve_analyzer() -> Analyzer:
 
 
 _CACHE: dict[str, ListingObservations] = {}
+_CACHE_MAX_ENTRIES = 512
 
 
 def analyze_photoset(facts: ListingFacts, analyzer: Analyzer | None = None) -> ListingObservations:
@@ -58,6 +59,8 @@ def analyze_photoset(facts: ListingFacts, analyzer: Analyzer | None = None) -> L
         return cached
     result = active.analyze(facts)
     _CACHE[key] = result
+    if len(_CACHE) > _CACHE_MAX_ENTRIES:
+        del _CACHE[next(iter(_CACHE))]
     return result
 
 

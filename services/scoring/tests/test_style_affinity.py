@@ -1,45 +1,27 @@
 from app.schemas import (
-    CategoryWeights,
-    ListingFacts,
     ListingObservations,
     ObservationItem,
-    PhotoObservations,
     Rubric,
-    RubricArchetype,
     RubricDirections,
     StyleClassification,
 )
 from app.scoring.engine import score
+from tests.builders import make_facts as _facts
+from tests.builders import make_rubric, single_photo
 
 WARM_TRAD = RubricDirections(tone="warm", era="traditional", ornament="ornate", naturalness="natural")
 COOL_MODERN = RubricDirections(tone="cool", era="modern", ornament="minimal", naturalness="engineered")
 
 
-def _rubric(item_weights, directions) -> Rubric:
-    return Rubric(
-        version="1.0",
-        category_weights=CategoryWeights(bones=20, warmth=20, finish=20, outdoor=20, value=10, age=10),
-        item_weights=item_weights,
-        directions=directions,
-        archetype=RubricArchetype(name="x", blend={"x": 1.0}),
-        confidence={},
-    )
+def _rubric(item_weights: dict[str, float], directions: RubricDirections) -> Rubric:
+    return make_rubric(item_weights=item_weights, directions=directions)
 
 
-def _obs(item_key, value, confidence=0.9) -> ListingObservations:
-    return ListingObservations(
-        photos=[PhotoObservations(room_type="room", observations={item_key: ObservationItem(value=value, confidence=confidence)})],
-        flags=[],
-        model="stub",
-        schema_version="1.0",
-    )
+def _obs(item_key: str, value: object, confidence: float = 0.9) -> ListingObservations:
+    return single_photo({item_key: ObservationItem(value=value, confidence=confidence)})
 
 
-def _facts() -> ListingFacts:
-    return ListingFacts(url="https://example.com", photo_urls=[])
-
-
-def _styles(*pairs):
+def _styles(*pairs: tuple[str, float]) -> list[StyleClassification]:
     return [StyleClassification(style=s, confidence=c) for s, c in pairs]
 
 

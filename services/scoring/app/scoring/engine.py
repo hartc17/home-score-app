@@ -169,7 +169,7 @@ def _disqualified(reason: str | None, observations: ListingObservations) -> Scor
         disqualified_reason=reason,
         category_scores={},
         total=0.0,
-        verdict="weak",
+        verdict=get_config().verdict_tiers[-1][1],
         flags=observations.flags,
         dd_items=[],
         observation_trace={},

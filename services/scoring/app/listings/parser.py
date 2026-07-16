@@ -139,6 +139,8 @@ def _from_text(soup: BeautifulSoup, facts: dict) -> None:
         "baths": r"(\d+(?:\.\d)?)\s*(?:baths?|ba|bathrooms?)\b",
         "sqft": r"([\d,]{3,})\s*(?:sq\.?\s?ft|sqft|square\s?feet)",
         "year_built": r"(?:built|year built)[^\d]{0,10}(\d{4})",
+        "garage": r"(\d+)[\s-]*car garage",
+        "taxes_annual": r"tax(?:es)?[^\d$]{0,12}\$?\s?([\d,]{3,})",
     }
     for key, pattern in patterns.items():
         if facts.get(key) is not None:
@@ -181,7 +183,7 @@ def parse_listing_html(url: str, html: str) -> ListingFacts:
         beds=facts.get("beds"),
         baths=facts.get("baths"),
         sqft=facts.get("sqft"),
-        year_built=int(facts["year_built"]) if facts.get("year_built") else None,
+        year_built=int(facts["year_built"]) if facts.get("year_built") is not None else None,
         garage=facts.get("garage"),
         lot_sqft=facts.get("lot_sqft"),
         taxes_annual=facts.get("taxes_annual"),

@@ -1,9 +1,5 @@
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import Session
 
-from app.db.models import Base
 from app.rubrics.store import (
     get_latest_rubric,
     get_rubric_by_version,
@@ -11,15 +7,6 @@ from app.rubrics.store import (
     save_rubric,
 )
 from app.schemas import CategoryWeights, Rubric, RubricArchetype, RubricDirections
-
-
-@pytest.fixture
-def db():
-    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
-    Base.metadata.create_all(engine)
-    factory = sessionmaker(bind=engine, expire_on_commit=False)
-    with factory() as session:
-        yield session
 
 
 def _rubric(warmth: int = 20) -> Rubric:

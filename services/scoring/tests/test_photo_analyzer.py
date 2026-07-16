@@ -1,12 +1,11 @@
 from app.photos.analyzer import (
     SCHEMA_VERSION,
-    ListingObservations,
     StubAnalyzer,
     analyze_photoset,
     clear_cache,
     photoset_hash,
 )
-from app.schemas import ListingFacts
+from app.schemas import ListingFacts, ListingObservations
 
 
 def _facts(photo_urls) -> ListingFacts:

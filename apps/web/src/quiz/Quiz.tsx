@@ -3,22 +3,18 @@ import { QUESTIONS, type QuizOption } from "./questions.ts";
 import { Plate } from "./Plate.tsx";
 
 export function Quiz({ onComplete }: { onComplete: (picks: QuizOption[]) => void }) {
-  const [index, setIndex] = useState(0);
   const [picks, setPicks] = useState<QuizOption[]>([]);
+  const index = picks.length;
 
-  const choose = useCallback(
-    (side: 0 | 1) => {
-      const option = QUESTIONS[index].options[side];
-      const next = [...picks, option];
-      if (next.length === QUESTIONS.length) {
-        onComplete(next);
-        return;
-      }
-      setPicks(next);
-      setIndex(next.length);
-    },
-    [index, picks, onComplete],
-  );
+  // Functional update keeps rapid key/click events from reading a stale `picks`
+  // and recording a duplicate answer.
+  const choose = useCallback((side: 0 | 1) => {
+    setPicks((prev) => (prev.length >= QUESTIONS.length ? prev : [...prev, QUESTIONS[prev.length].options[side]]));
+  }, []);
+
+  useEffect(() => {
+    if (picks.length === QUESTIONS.length) onComplete(picks);
+  }, [picks, onComplete]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -29,6 +25,7 @@ export function Quiz({ onComplete }: { onComplete: (picks: QuizOption[]) => void
     return () => window.removeEventListener("keydown", onKey);
   }, [choose]);
 
+  if (index >= QUESTIONS.length) return null;
   const question = QUESTIONS[index];
   const progress = (index / QUESTIONS.length) * 100;
 
@@ -41,7 +38,13 @@ export function Quiz({ onComplete }: { onComplete: (picks: QuizOption[]) => void
             {index + 1} / {QUESTIONS.length}
           </span>
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-stone-200">
+        <div
+          className="h-1.5 w-full overflow-hidden rounded-full bg-stone-200"
+          role="progressbar"
+          aria-valuenow={index}
+          aria-valuemin={0}
+          aria-valuemax={QUESTIONS.length}
+        >
           <div className="h-full rounded-full bg-stone-800 transition-all duration-300" style={{ width: `${progress}%` }} />
         </div>
       </div>

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, JSON, String, func
+from sqlalchemy import DateTime, ForeignKey, Integer, JSON, String, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -27,6 +27,7 @@ class User(Base):
 
 class RubricRow(Base):
     __tablename__ = "rubrics"
+    __table_args__ = (UniqueConstraint("user_id", "version", name="uq_rubric_user_version"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
