@@ -23,3 +23,20 @@ export interface ScoreResult {
   dd_items: string[];
   observation_trace: Record<string, string>;
 }
+
+export interface ScoreRunResponse {
+  listing_id: number;
+  score: ScoreResult;
+}
+
+export interface ScoredListing {
+  listing_id: number;
+  url: string;
+  address?: string;
+  price?: number;
+  total: number;
+  verdict: "pursue" | "showing" | "conditional" | "weak";
+  category_scores: Record<string, number>;
+  rubric_version: number;
+  created_at: string;
+}

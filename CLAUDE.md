@@ -90,4 +90,4 @@ The same listing scores differently for different users - that is the product.
 | A | 🔨 Quiz -> Rubric (client-side inference, anonymous persistence). Core built; curated photo bank pending. |
 | B | 🔨 Gates + anonymous persistence + merge. Gates form, rubric merge, and versioned server-side persistence (anonymous-id keyed) done; magic-link account claim deferred by design. |
 | C | 🔨 Scoring service. Deterministic core + style-affinity done; scoring-contract.md written; Claude vision analyzer built (gated on ANTHROPIC_API_KEY), triage/resize hardening left. |
-| D | ⏳ Persistence + comparison view |
+| D | 🔨 Persistence + comparison view. Listing/photo-analysis/score/dd-item tables, score-run endpoint (get-or-create listing, reuse photoset-hash cache, per-rubric score), and ranked comparison view built. |

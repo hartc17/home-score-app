@@ -128,3 +128,25 @@ class StoredRubricResponse(BaseModel):
 class RubricVersionInfo(BaseModel):
     version: int
     created_at: datetime
+
+
+class ScoreRunRequest(BaseModel):
+    anon_id: str
+    url: str
+
+
+class ScoreRunResponse(BaseModel):
+    listing_id: int
+    score: ScoreResult
+
+
+class ScoredListing(BaseModel):
+    listing_id: int
+    url: str
+    address: str | None = None
+    price: float | None = None
+    total: float
+    verdict: str
+    category_scores: dict[str, float]
+    rubric_version: int
+    created_at: datetime

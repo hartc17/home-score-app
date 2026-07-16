@@ -91,10 +91,10 @@ The Python service mirrors these as Pydantic models in `services/scoring/app/sch
 ### Scoring service (`services/scoring`)
 
 Python plus FastAPI.
-The API layer is split into routers under `app/api/routes/` (listings, photos, score, rubrics).
+The API layer is split into routers under `app/api/routes/` (listings, photos, score, scores, rubrics).
 The pure scoring engine lives in `app/scoring/engine.py` and performs no I/O.
 Tunable match tables and thresholds live in `app/scoring/scoring_config.json`, loaded by `app/scoring/config.py`, so tuning does not require a code change.
-Persistence lives in `app/db/` (models, engine, session) and `app/rubrics/` (store and the server-side merge mirror), kept out of the pure engine.
+Persistence lives in `app/db/` (models, engine, session), `app/rubrics/` (rubric store and the server-side merge mirror), and `app/scores/` (the score-run store), all kept out of the pure engine.
 
 ## Quiz and persistence flow
 
@@ -192,15 +192,19 @@ The quiz generates an anonymous id in the browser, and the web app posts the rub
 The scoring service stores it in Postgres (SQLite in tests) as a `users` row and a versioned `rubrics` row.
 Each save writes a new version, so tuning weights never rewrites a past rubric (`GET /rubrics/{anon_id}` returns the latest, `GET /rubrics/{anon_id}/versions` lists all).
 
-The SQLAlchemy models live in `app/db/models.py`, the engine and session in `app/db/base.py`, and the store functions in `app/rubrics/store.py`.
+The SQLAlchemy models live in `app/db/models.py`, the engine and session in `app/db/base.py`, and the store functions in `app/rubrics/store.py` (rubrics) and `app/scores/store.py` (score runs).
 Persistence is kept out of the pure scoring engine, which still performs no I/O.
 `merge_gates` (in `app/rubrics/merge.py`, mirroring the web client) adds stated gates without overwriting the quiz-derived rubric parts.
 The anonymous-to-account compose-forward merge is deferred with Phase E rather than kept as unused code.
 
+Score runs persist through `POST /scores/run`, which gets-or-creates the `listings` row for a URL, reuses the cached `photo_analyses` row when one exists (keyed by photoset hash), scores against the caller's latest rubric, and inserts a new `scores` row with its `rubric_version` plus any due-diligence items.
+`GET /scores/{anon_id}` returns the caller's scored listings ranked by total, keeping only the newest score per listing.
+Listings and photo analyses are shared across users because they are preference-neutral; only scores are per-rubric.
+A new score is always inserted rather than an old one updated, so tuning a rubric never rewrites a past score.
+
 ### Data model
 
-Solid entities are built today.
-Dashed entities (listings, photo analyses, scores, due-diligence items) are the Phase D schema, shown here as the target.
+All entities below are built.
 
 ```mermaid
 erDiagram
@@ -230,26 +234,30 @@ erDiagram
   }
   LISTINGS {
     int id PK
-    string url
+    string url UK
+    string address "nullable"
+    float price "nullable"
     json facts
     datetime created_at
   }
   PHOTO_ANALYSES {
     int id PK
-    int listing_id FK
+    int listing_id FK "unique, one per listing"
     string model
     string schema_version
     string photoset_hash
     json observations
+    datetime created_at
   }
   SCORES {
     int id PK
     int listing_id FK
     int rubric_id FK
     int rubric_version
-    int total
+    float total
     string verdict
     json category_scores
+    datetime created_at
   }
   DD_ITEMS {
     int id PK

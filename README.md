@@ -40,6 +40,7 @@ npm run dev --workspace=apps/web
 The web app opens on the forced-choice quiz.
 Answering it infers a taste rubric (`packages/contracts` `Rubric`), persists it anonymously in the browser, and shows the archetype reveal.
 The quiz module lives in `apps/web/src/quiz/`: `questions.ts` (data-driven bank), `inference.ts` (pure picks-to-rubric), `storage.ts` (anonymous persistence), and the `Quiz`/`Reveal` components.
+From the reveal, "Score listings" opens the comparison view (`apps/web/src/compare/`), where pasting a listing URL scores it against the rubric and ranks it against previously scored listings.
 
 ### Scoring service
 
@@ -53,7 +54,7 @@ uvicorn app.main:app --reload
 
 The service reads `DATABASE_URL` (defaults to the Postgres from `infra/docker-compose.yml`).
 It auto-creates tables on startup.
-The web dev server proxies `/rubrics`, `/listings`, `/photos`, and `/score` to `http://localhost:8000`, so run both together during development.
+The web dev server proxies `/rubrics`, `/listings`, `/photos`, `/score`, and `/scores` to `http://localhost:8000`, so run both together during development.
 
 ### Database
 
@@ -82,7 +83,7 @@ Detailed, actionable plans for each phase live in [docs/plans/](docs/plans/READM
 | A | 🔨 | Quiz -> Rubric (client-side inference, anonymous persistence). Core built with SVG stand-in plates; curated photo bank still pending. | [phase-a](docs/plans/phase-a-quiz-rubric.md) |
 | B | 🔨 | Gates + anonymous persistence + merge. Gates form, rubric merge (compose, don't clobber), and versioned server-side persistence keyed by an anonymous id are done. Optional magic-link account claim is deferred by design. | [phase-b](docs/plans/phase-b-gates-accounts.md) |
 | C | 🔨 | Scoring service. Deterministic core done (config-driven engine, personalized weights, style-affinity, parse); [scoring contract](docs/scoring-contract.md) written; Claude vision analyzer built (gated on `ANTHROPIC_API_KEY`), with triage/resize hardening left. | [phase-c](docs/plans/phase-c-scoring-service.md) |
-| D | ⏳ | Persistence + comparison view | [phase-d](docs/plans/phase-d-persistence-comparison.md) |
+| D | 🔨 | Persistence + comparison view. Listing, photo-analysis, score, and due-diligence tables; a score-run endpoint that gets-or-creates a listing, reuses the cached photo analysis, and records a per-rubric score with its rubric version; and a comparison view that ranks a user's scored listings. Keyed by the anonymous id. | [phase-d](docs/plans/phase-d-persistence-comparison.md) |
 
 Preference neutrality is a cross-cutting hard requirement spanning phases A and C: see [docs/plans/preference-neutrality.md](docs/plans/preference-neutrality.md).
 
@@ -96,6 +97,8 @@ Preference neutrality is a cross-cutting hard requirement spanning phases A and 
 | POST | `/rubrics` | Persist a rubric for an anonymous id (versioned); returns the stored version |
 | GET | `/rubrics/{anon_id}` | Latest stored rubric for an anonymous id |
 | GET | `/rubrics/{anon_id}/versions` | Version history for an anonymous id |
+| POST | `/scores/run` | Score a pasted listing URL against the caller's latest rubric and persist the run (get-or-create listing, reuse cached photo analysis, record a per-rubric score with its rubric version) |
+| GET | `/scores/{anon_id}` | The caller's scored listings, ranked by total (newest score per listing) |
 
 Tunable scoring tables and thresholds live in `services/scoring/app/scoring/scoring_config.json`, so tuning does not require a code change.
 See [docs/architecture.md](docs/architecture.md) for the full data flow and scoring math.

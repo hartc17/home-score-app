@@ -10,6 +10,7 @@ export default defineConfig({
       "/rubrics": backend,
       "/listings": backend,
       "/photos": backend,
+      "/scores": backend,
       "/score": backend,
     },
   },

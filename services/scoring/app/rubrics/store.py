@@ -24,7 +24,7 @@ def _get_or_create_user(db: Session, anon_id: str) -> User:
     return user
 
 
-def _row_to_rubric(row: RubricRow) -> Rubric:
+def rubric_from_row(row: RubricRow) -> Rubric:
     return Rubric(
         version=row.schema_version,
         gates=RubricGates(**row.gates_json) if row.gates_json else None,
@@ -53,7 +53,17 @@ def save_rubric(db: Session, anon_id: str, rubric: Rubric) -> tuple[int, Rubric]
     )
     db.add(row)
     db.commit()
-    return version, _row_to_rubric(row)
+    return version, rubric_from_row(row)
+
+
+def get_latest_rubric_row(db: Session, anon_id: str) -> RubricRow | None:
+    return db.scalar(
+        select(RubricRow)
+        .join(User)
+        .where(User.anon_id == anon_id)
+        .order_by(RubricRow.version.desc())
+        .limit(1)
+    )
 
 
 def get_latest_rubric(db: Session, anon_id: str) -> tuple[int, Rubric] | None:
@@ -64,7 +74,7 @@ def get_latest_rubric(db: Session, anon_id: str) -> tuple[int, Rubric] | None:
         .order_by(RubricRow.version.desc())
         .limit(1)
     )
-    return (row.version, _row_to_rubric(row)) if row is not None else None
+    return (row.version, rubric_from_row(row)) if row is not None else None
 
 
 def get_rubric_by_version(db: Session, anon_id: str, version: int) -> Rubric | None:
@@ -73,7 +83,7 @@ def get_rubric_by_version(db: Session, anon_id: str, version: int) -> Rubric | N
         .join(User)
         .where(User.anon_id == anon_id, RubricRow.version == version)
     )
-    return _row_to_rubric(row) if row is not None else None
+    return rubric_from_row(row) if row is not None else None
 
 
 def get_rubric_versions(db: Session, anon_id: str) -> list[tuple[int, datetime]]:

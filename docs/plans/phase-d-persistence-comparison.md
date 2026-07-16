@@ -77,9 +77,9 @@ Historical integrity depends on never mutating a past score, so persistence must
 
 ## Acceptance checklist
 
-- [ ] `listings`, `photo_analyses`, `scores`, and `dd_items` tables migrated.
-- [ ] A score run persists listing, analysis, score, and due-diligence items for a signed-in user.
-- [ ] Each score records the rubric version that produced it.
-- [ ] Re-scoring after tuning creates a new score, leaving the old one intact.
-- [ ] Comparison endpoint and table rank a user's scored listings.
-- [ ] Persistence models stay out of the pure scoring engine.
+- [x] `listings`, `photo_analyses`, `scores`, and `dd_items` tables created (via the shared `Base.metadata`, consistent with the `users`/`rubrics` approach from Phase B; the project has no separate migration framework).
+- [x] A score run persists listing, analysis, score, and due-diligence items for a user, keyed by `anon_id`.
+- [x] Each score records the rubric version that produced it.
+- [x] Re-scoring after tuning creates a new score, leaving the old one intact.
+- [x] Comparison endpoint and view rank a user's scored listings by total.
+- [x] Persistence models stay out of the pure scoring engine (`app/scores/store.py` does the I/O; `app/scoring/engine.py` stays pure).

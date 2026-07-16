@@ -22,10 +22,12 @@ export function Reveal({
   profile,
   onRetake,
   onAddGates,
+  onScoreListings,
 }: {
   profile: TasteProfile;
   onRetake: () => void;
   onAddGates: () => void;
+  onScoreListings?: () => void;
 }) {
   const { rubric, axes } = profile;
   const gates = rubric.gates;
@@ -135,7 +137,15 @@ export function Reveal({
         )}
       </section>
 
-      <div className="mt-8 text-center">
+      <div className="mt-8 flex items-center justify-center gap-3">
+        {onScoreListings && (
+          <button
+            onClick={onScoreListings}
+            className="rounded-full bg-stone-800 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-stone-700"
+          >
+            Score listings
+          </button>
+        )}
         <button
           onClick={onRetake}
           className="rounded-full border border-stone-300 px-6 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100"

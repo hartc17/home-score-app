@@ -11,7 +11,7 @@ This roadmap places them in context and enumerates the future phases and cross-c
 | A | Quiz to Rubric | Core built; photo bank pending |
 | B | Gates + anonymous persistence + merge | Built; magic-link claim deferred |
 | C | Scoring service | Deterministic core built; live vision to build |
-| D | Persistence + comparison | Planned, not built |
+| D | Persistence + comparison | Built; keyed by anonymous id |
 | E | Accounts + magic-link claim | Not planned in detail |
 | F | Live vision + style-affinity | Not planned in detail |
 | G | Comps + reno estimator (full value) | Not planned in detail |
@@ -34,8 +34,8 @@ flowchart TB
   classDef wip fill:#fff2cc,stroke:#c93,color:#111;
   classDef future fill:#eeeeee,stroke:#999,stroke-dasharray:4 3,color:#111;
   class A done;
-  class B,C wip;
-  class D,E,F,G,H,I future;
+  class B,C,D wip;
+  class E,F,G,H,I future;
 ```
 
 ## Finishing the current phases
@@ -58,10 +58,11 @@ Size: small.
 
 ### Phase D: persistence and comparison
 
-Planned in [phase-d-persistence-comparison.md](plans/phase-d-persistence-comparison.md).
-Adds the `listings`, `photo_analyses`, `scores`, and `dd_items` tables, persists a score run, and builds the comparison table.
+Built, per [phase-d-persistence-comparison.md](plans/phase-d-persistence-comparison.md).
+The `listings`, `photo_analyses`, `scores`, and `dd_items` tables land, a score run persists the listing facts, the photo analysis (reusing the Phase C photoset-hash cache), the score with its rubric version, and the due-diligence items, and the web app ranks a user's scored listings in a comparison view.
+Listing facts and photo analyses are shared across users because they are preference-neutral; only scores are per-rubric, which keeps the neutrality invariant.
+Scoring is keyed by anonymous id, so it works before any account exists; the magic-link account claim stays deferred to Phase E.
 Dependency: Phase C `ScoreResult`, Phase B persistence.
-Size: medium.
 
 ## Future phases (not yet planned in detail)
 
