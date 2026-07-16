@@ -59,5 +59,5 @@ Signing a session requires `HOUSEFLAVOR_SESSION_SECRET` to be set to a non-defau
 ## Deferred
 
 A live email send needs a provider key.
-IP-level rate limiting on `/auth/request` and full multi-device anonymous-id reconciliation are deferred beyond the single-outstanding-link-per-email rule.
+`/auth/request` is rate limited per email (five links per fifteen-minute sliding window, backed by the `login_tokens` timestamps); per-IP rate limiting and full multi-device anonymous-id reconciliation remain deferred.
 The SSRF exposure in the listing and photo fetch has since been closed by the `app/net/guard.py` public-URL guard (see the architecture doc); a residual DNS-rebinding window between validation and connection remains and is noted there.

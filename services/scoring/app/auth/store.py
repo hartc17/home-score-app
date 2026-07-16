@@ -11,9 +11,34 @@ from app.rubrics.merge import compose_forward
 from app.rubrics.store import latest_rubric_for_user, save_rubric_for_user
 
 LOGIN_TTL_MINUTES = 15
+RATE_LIMIT_MAX = 5
+RATE_LIMIT_WINDOW_MINUTES = 15
+
+
+class RateLimitedError(Exception):
+    pass
+
+
+def _rate_limited(db: Session, email: str, now: datetime) -> bool:
+    # Sliding window without trusting the clock skew between backends: if the
+    # most recent RATE_LIMIT_MAX links for this email all fall inside the window,
+    # the next request is refused. Bounded fetch, compared in Python so it holds
+    # on both SQLite (naive) and Postgres (aware).
+    recent = db.scalars(
+        select(LoginToken)
+        .where(LoginToken.email == email)
+        .order_by(LoginToken.created_at.desc())
+        .limit(RATE_LIMIT_MAX)
+    ).all()
+    if len(recent) < RATE_LIMIT_MAX:
+        return False
+    oldest = min(_as_utc(t.created_at) for t in recent)
+    return oldest > now - timedelta(minutes=RATE_LIMIT_WINDOW_MINUTES)
 
 
 def create_login_token(db: Session, email: str, anon_id: str | None, now: datetime) -> str:
+    if _rate_limited(db, email, now):
+        raise RateLimitedError(email)
     # One outstanding link per email: requesting a new one retires any prior
     # unconsumed tokens so an old link cannot be replayed.
     db.execute(
@@ -27,6 +52,7 @@ def create_login_token(db: Session, email: str, anon_id: str | None, now: dateti
             token_hash=token_hash,
             email=email,
             claim_anon_id=anon_id,
+            created_at=now,
             expires_at=now + timedelta(minutes=LOGIN_TTL_MINUTES),
         )
     )

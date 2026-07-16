@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.auth.email import resolve_email_sender
-from app.auth.store import claim_account, consume_login_token, create_login_token
+from app.auth.store import RateLimitedError, claim_account, consume_login_token, create_login_token
 from app.auth.tokens import issue_session, read_session
 from app.db.base import get_db
 from app.db.models import RubricRow, User
@@ -31,7 +31,10 @@ def _app_url() -> str:
 @router.post("/request", response_model=MagicLinkResponse)
 def request_link(request: MagicLinkRequest, db: Session = Depends(get_db)) -> MagicLinkResponse:
     now = datetime.now(timezone.utc)
-    raw = create_login_token(db, request.email, request.anon_id, now)
+    try:
+        raw = create_login_token(db, request.email, request.anon_id, now)
+    except RateLimitedError as exc:
+        raise HTTPException(status_code=429, detail="too many sign-in requests; try again shortly") from exc
     link = f"{_app_url()}/?token={raw}"
     sender = resolve_email_sender()
     sender.send_magic_link(request.email, link)

@@ -39,6 +39,12 @@ def test_full_magic_link_flow_claims_and_signs_in(client):
     assert me.json()["email"] == "buyer@example.com"
 
 
+def test_request_is_rate_limited_per_email(client):
+    for _ in range(5):
+        assert client.post("/auth/request", json={"email": "buyer@example.com"}).status_code == 200
+    assert client.post("/auth/request", json={"email": "buyer@example.com"}).status_code == 429
+
+
 def test_verify_rejects_unknown_token(client):
     assert client.post("/auth/verify", json={"token": "nope"}).status_code == 400
 

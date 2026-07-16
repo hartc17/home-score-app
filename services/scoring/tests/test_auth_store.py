@@ -2,7 +2,15 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
 
-from app.auth.store import claim_account, consume_login_token, create_login_token
+import pytest
+
+from app.auth.store import (
+    RATE_LIMIT_MAX,
+    RateLimitedError,
+    claim_account,
+    consume_login_token,
+    create_login_token,
+)
 from app.db.models import User
 from app.rubrics.store import latest_rubric_for_user, save_rubric
 from tests.builders import make_gates, make_rubric
@@ -37,6 +45,27 @@ def test_requesting_new_token_retires_prior_one(db):
     first = create_login_token(db, "buyer@example.com", "anon-1", NOW)
     create_login_token(db, "buyer@example.com", "anon-1", NOW)
     assert _consume(db, first) is None
+
+
+def test_rate_limited_after_max_requests_in_window(db):
+    for _ in range(RATE_LIMIT_MAX):
+        create_login_token(db, "buyer@example.com", None, NOW)
+    with pytest.raises(RateLimitedError):
+        create_login_token(db, "buyer@example.com", None, NOW)
+
+
+def test_rate_limit_resets_after_the_window(db):
+    for _ in range(RATE_LIMIT_MAX):
+        create_login_token(db, "buyer@example.com", None, NOW)
+    later = NOW + timedelta(minutes=16)
+    assert create_login_token(db, "buyer@example.com", None, later)
+
+
+def test_rate_limit_is_per_email(db):
+    for _ in range(RATE_LIMIT_MAX):
+        create_login_token(db, "buyer@example.com", None, NOW)
+    # A different address is unaffected.
+    assert create_login_token(db, "other@example.com", None, NOW)
 
 
 def test_claim_in_place_sets_email_on_anonymous_row(db):
