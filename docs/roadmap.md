@@ -117,7 +117,7 @@ These are not phases; they are ongoing concerns that should land as the product 
 - Observability: structured logging, error tracking, and request tracing across the two services.
 - Cost and abuse controls: rate limit `/listings/parse` and `/photos/analyze`, since both cost money (fetch bandwidth and vision tokens); cache aggressively; guard against scraping of the parse endpoint.
 - Privacy and consent: capture the anonymous preference profile with clear consent from day one, and define retention and deletion, since the profile is a compounding data asset that must stay unencumbered.
-- Security review: authentication hardening for Phase E, input validation at every boundary, and a dependency audit.
+- Security review: a first pass is done. Phase E now fails closed in production on a missing or default session secret and a missing mail provider, and every server-side URL fetch goes through an SSRF guard (`app/net/guard.py`) that blocks non-public addresses and re-validates each redirect hop. Still open: rate limiting on `/auth/request`, server-side session revocation, closing the DNS-rebinding window, and a dependency audit.
 - Performance and load: measure the vision path latency and the parse path resilience; add load testing before any launch.
 - Accessibility: audit the quiz and reveal for keyboard and screen-reader use; the forced-choice UI already supports keyboard, but the reveal and gates form need a full pass.
 - Progressive web app: offline-friendly quiz and installability, since the MVP is responsive web.

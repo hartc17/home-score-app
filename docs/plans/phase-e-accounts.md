@@ -60,4 +60,4 @@ Signing a session requires `HOUSEFLAVOR_SESSION_SECRET` to be set to a non-defau
 
 A live email send needs a provider key.
 IP-level rate limiting on `/auth/request` and full multi-device anonymous-id reconciliation are deferred beyond the single-outstanding-link-per-email rule.
-The SSRF exposure in the listing and photo fetch (a pasted URL is fetched server-side with only a scheme check) is tracked as a separate hardening item, not part of the auth surface.
+The SSRF exposure in the listing and photo fetch has since been closed by the `app/net/guard.py` public-URL guard (see the architecture doc); a residual DNS-rebinding window between validation and connection remains and is noted there.

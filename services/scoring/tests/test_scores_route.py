@@ -48,6 +48,14 @@ def test_run_score_rejects_non_http_url(client: TestClient):
     assert response.status_code == 422
 
 
+def test_run_score_blocks_internal_address_ssrf(client: TestClient):
+    # Real fetch path (not mocked): the guard must refuse a link-local address
+    # like the cloud metadata endpoint before any connection is made.
+    client.post("/rubrics", json={"anon_id": "u1", "rubric": _rubric_payload()})
+    response = client.post("/scores/run", json={"anon_id": "u1", "url": "http://169.254.169.254/latest/meta-data/"})
+    assert response.status_code == 422
+
+
 def test_list_scores_returns_ranked_comparison(client: TestClient, monkeypatch):
     client.post("/rubrics", json={"anon_id": "u1", "rubric": _rubric_payload()})
     _mock_pipeline(monkeypatch, tone=9.0)

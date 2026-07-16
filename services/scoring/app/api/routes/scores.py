@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.db.base import get_db
 from app.listings.fetch import fetch_html_sync
 from app.listings.parser import parse_listing_html
+from app.net.guard import UnsafeURLError
 from app.photos.analyzer import analyze_photoset
 from app.rubrics.store import get_latest_rubric_row, rubric_from_row
 from app.schemas import (
@@ -43,8 +44,10 @@ def run_score(request: ScoreRunRequest, db: Session = Depends(get_db)) -> ScoreR
     else:
         try:
             html = fetch_html_sync(request.url)
+        except UnsafeURLError as exc:
+            raise HTTPException(status_code=422, detail="url is not a fetchable public listing URL") from exc
         except httpx.HTTPError as exc:
-            raise HTTPException(status_code=502, detail=f"could not fetch listing: {exc}") from exc
+            raise HTTPException(status_code=502, detail="could not fetch the listing") from exc
         facts = parse_listing_html(request.url, html)
         observations = analyze_photoset(facts)
 
