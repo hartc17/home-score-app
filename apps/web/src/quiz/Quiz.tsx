@@ -51,22 +51,22 @@ export function Quiz({ onComplete }: { onComplete: (picks: QuizOption[]) => void
 
       <h2 className="mb-8 text-center text-2xl font-semibold text-stone-800">{question.prompt}</h2>
 
-      <div className="grid flex-1 grid-cols-1 gap-5 sm:grid-cols-2">
-        {question.options.map((option, side) => (
-          <button
-            key={option.id}
-            onClick={() => choose(side as 0 | 1)}
-            className="group relative overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm ring-stone-800 transition hover:-translate-y-1 hover:shadow-md focus:outline-none focus-visible:ring-2"
-            aria-label={`Option ${side + 1}`}
-          >
-            <div className="aspect-[4/3] w-full">
+      <div className="flex flex-1 items-center">
+        <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2">
+          {question.options.map((option, side) => (
+            <button
+              key={option.id}
+              onClick={() => choose(side as 0 | 1)}
+              className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm ring-stone-800 transition hover:-translate-y-1 hover:shadow-md focus:outline-none focus-visible:ring-2"
+              aria-label={`Option ${side + 1}`}
+            >
               <OptionImage option={option} />
-            </div>
-            <span className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-sm font-semibold text-stone-700 shadow">
-              {side + 1}
-            </span>
-          </button>
-        ))}
+              <span className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-sm font-semibold text-stone-700 shadow">
+                {side + 1}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <p className="mt-8 text-center text-sm text-stone-400">

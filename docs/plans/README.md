@@ -16,6 +16,7 @@ Quiz infers a rubric (A), gates and accounts complete and persist it (B), the sc
 | C | [phase-c-scoring-service.md](phase-c-scoring-service.md) | Parse, analyze, and score a pasted listing; two rubrics differ on the same house. |
 | D | [phase-d-persistence-comparison.md](phase-d-persistence-comparison.md) | Persist scores and rank listings in a comparison view. |
 | Cross | [preference-neutrality.md](preference-neutrality.md) | The three-places neutrality hard requirement, spanning A and C. |
+| A image bank | [illustration-bank.md](illustration-bank.md) | The token-driven parametric illustration system for the quiz images, where neutrality is structural. |
 
 ## Dependency order
 

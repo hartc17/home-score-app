@@ -27,6 +27,8 @@ Every pair needs a warm option that a warm-lover picks and a cool option that a 
 Curation test: show the two photos to a stranger with no words, and check that the intended contrast is obvious and that neither photo is the prettier one.
 If a photo wins only because it is better shot, replace it.
 Because Phase A ships with SVG stand-ins, structure the question bank so swapping an SVG for a photo URL is a single field change, then apply this curation test when the real photo bank lands.
+The image bank took the parametric illustration route (see [illustration-bank.md](illustration-bank.md)), which makes this test largely structural: both options in a pair are the same drawing with a palette or motif swap, so neither can be the prettier one by construction.
+The remaining discipline is in the tokens: warm and cool are matched in lightness and contrast (not saturation), only the accent pop is saturation-matched, and both poles carry equal staging.
 
 ### 3. Math
 

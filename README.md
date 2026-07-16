@@ -39,7 +39,7 @@ npm run dev --workspace=apps/web
 
 The web app opens on the forced-choice quiz.
 Answering it infers a taste rubric (`packages/contracts` `Rubric`), persists it anonymously in the browser, and shows the archetype reveal.
-The quiz module lives in `apps/web/src/quiz/`: `questions.ts` (data-driven bank), `inference.ts` (pure picks-to-rubric), `storage.ts` (anonymous persistence), `OptionImage.tsx` (the SVG-plate to curated-photo swap seam), `shareCard.ts` (the reveal's shareable image export), and the `Quiz`/`Reveal` components.
+The quiz module lives in `apps/web/src/quiz/`: `questions.ts` (data-driven bank), `inference.ts` (pure picks-to-rubric), `storage.ts` (anonymous persistence), `scene/` (the token-driven parametric illustration engine: `tokens.ts` palettes, `spec.ts` scene ids, `Scene.tsx` renderer), `OptionImage.tsx` (the scene-to-curated-photo swap seam), `shareCard.ts` (the reveal's shareable image export), and the `Quiz`/`Reveal` components.
 From the reveal, "Share my flavor" exports an image card of the archetype, and "Score listings" opens the comparison view (`apps/web/src/compare/`), where pasting a listing URL scores it against the rubric and ranks it against previously scored listings.
 
 ### Scoring service
@@ -80,7 +80,7 @@ Detailed, actionable plans for each phase live in [docs/plans/](docs/plans/READM
 
 | Phase | Status | Description | Plan |
 |---|---|---|---|
-| A | 🔨 | Quiz -> Rubric (client-side inference, anonymous persistence). Core built with SVG stand-in plates; the reveal exports a shareable image card, and each quiz option takes an optional curated photo that replaces its SVG plate with no other code change. The curated photo bank itself is still pending on content licensing. | [phase-a](docs/plans/phase-a-quiz-rubric.md) |
+| A | 🔨 | Quiz -> Rubric (client-side inference, anonymous persistence). Core built; the reveal exports a shareable image card. The image bank is a token-driven parametric SVG illustration system where warm/cool is a palette swap and traditional/modern is a motif swap over one fixed geometry, so within any pair neither pole can be better-lit or more lovingly rendered: neutrality is structural. Each option can still be overridden with a curated photo via one field. | [phase-a](docs/plans/phase-a-quiz-rubric.md), [illustration-bank](docs/plans/illustration-bank.md) |
 | B | 🔨 | Gates + anonymous persistence + merge. Gates form, rubric merge (compose, don't clobber), and versioned server-side persistence keyed by an anonymous id are done. Optional magic-link account claim is deferred by design. | [phase-b](docs/plans/phase-b-gates-accounts.md) |
 | C | 🔨 | Scoring service. Deterministic core done (config-driven engine, personalized weights, style-affinity, parse); [scoring contract](docs/scoring-contract.md) written; Claude vision analyzer built (gated on `ANTHROPIC_API_KEY`), with triage/resize hardening left. | [phase-c](docs/plans/phase-c-scoring-service.md) |
 | D | 🔨 | Persistence + comparison view. Listing, photo-analysis, score, and due-diligence tables; a score-run endpoint that gets-or-creates a listing, reuses the cached photo analysis, and records a per-rubric score with its rubric version; and a comparison view that ranks a user's scored listings. Keyed by the anonymous id. | [phase-d](docs/plans/phase-d-persistence-comparison.md) |

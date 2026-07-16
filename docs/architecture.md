@@ -77,7 +77,8 @@ The quiz module (`src/quiz/`) is the current surface.
 `inference.ts` is a pure function from picks to a `Rubric`, inferring all five taste axes (tone, era, walls, ornament, naturalness) from pick consistency.
 `storage.ts` persists the anonymous rubric in the browser.
 `Quiz.tsx` and `Reveal.tsx` render the forced-choice flow and the dual reveal.
-`OptionImage.tsx` is the single swap seam: it renders an option's curated photo when one is set and the neutral SVG plate otherwise.
+`scene/` is the parametric illustration engine: `tokens.ts` holds the matched warm and cool palettes, `Scene.tsx` draws each base room once and themes it by a tone palette swap and an era motif swap, so a pair's two options are the same geometry and neutrality is structural rather than curated.
+`OptionImage.tsx` is the single swap seam: it renders an option's curated photo when one is set and the parametric scene otherwise.
 `shareCard.ts` exports the reveal as an Open-Graph-sized image card, via the Web Share API where available and a PNG download otherwise.
 `compare/Compare.tsx` ranks a user's scored listings.
 `gates/` holds the gates form and its pure parse and validation.

@@ -8,7 +8,7 @@ This roadmap places them in context and enumerates the future phases and cross-c
 
 | Phase | Title | Status |
 |---|---|---|
-| A | Quiz to Rubric | Core + share card built; photo bank pending on licensing |
+| A | Quiz to Rubric | Core + share card + parametric illustration bank built |
 | B | Gates + anonymous persistence + merge | Built; magic-link claim deferred |
 | C | Scoring service | Deterministic core built; live vision to build |
 | D | Persistence + comparison | Built; keyed by anonymous id |
@@ -40,12 +40,16 @@ flowchart TB
 
 ## Finishing the current phases
 
-### Phase A remainder: curated photo bank
+### Phase A remainder: image bank (built as a parametric illustration system)
 
 The reveal's image share-card export is built (`apps/web/src/quiz/shareCard.ts`): "Share my flavor" renders an Open-Graph-sized card of the archetype and its blend, using the Web Share API where available and falling back to a PNG download.
-The SVG-to-photo swap seam is also concrete now: each quiz option takes an optional `photo` URL, and `OptionImage` renders it in place of the SVG plate, so a curated photo drops in per option with no other code change.
-What remains is the curated photo bank itself: warm-and-cool option pairs, each shot at its most flattering, that pass the curation test in [preference-neutrality.md](plans/preference-neutrality.md).
-Dependency: none technical; needs photo sourcing and licensing.
+
+The image bank took the illustration route from [illustration-bank.md](plans/illustration-bank.md) rather than licensed photography.
+It is a token-driven parametric SVG engine (`apps/web/src/quiz/scene/`): six base rooms (living, kitchen, bedroom, facade, backyard, walls), each drawn once as fixed geometry and themed by tokens.
+Tone is a palette swap and era is a motif swap, so within any pair the two options are the same drawing and neither can be better-lit, better-composed, or more lovingly rendered than the other.
+This makes the neutrality that photos would force you to police (see [preference-neutrality.md](plans/preference-neutrality.md)) structural instead: warm and cool palettes are matched in lightness and contrast, only the accent pop is saturation-matched, and both poles carry equal staging.
+The per-option `photo` override seam is retained, so a curated photo can still replace any scene later with a one-field change.
+What remains is validation rather than construction: the bias smoke test on real users and the vision pre-screen QA of each scene.
 
 ### Phase C remainder: live vision
 
