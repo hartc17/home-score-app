@@ -1,7 +1,9 @@
+import { useState } from "react";
 import type { TasteProfile } from "./inference.ts";
 import { archetypeCopy } from "./inference.ts";
 import { AXES, AXIS_IDS } from "./axes.ts";
 import { CATEGORIES, type Category } from "./categories.ts";
+import { shareCard } from "./shareCard.ts";
 
 const CATEGORY_LABEL: Record<Category, string> = {
   bones: "Bones",
@@ -31,7 +33,19 @@ export function Reveal({
 }) {
   const { rubric, axes } = profile;
   const gates = rubric.gates;
+  const [sharing, setSharing] = useState(false);
   const blend = Object.entries(rubric.archetype.blend).sort((a, b) => b[1] - a[1]);
+
+  async function handleShare() {
+    setSharing(true);
+    try {
+      await shareCard(rubric.archetype.name, rubric.archetype.blend);
+    } catch {
+      // A cancelled share or an unsupported browser is not an error worth surfacing.
+    } finally {
+      setSharing(false);
+    }
+  }
   const weights = CATEGORIES.map((c) => ({ cat: c, weight: rubric.category_weights[c] }));
   const maxWeight = Math.max(...weights.map((w) => w.weight));
 
@@ -50,6 +64,13 @@ export function Reveal({
             </span>
           ))}
         </div>
+        <button
+          onClick={handleShare}
+          disabled={sharing}
+          className="mt-8 inline-flex items-center gap-2 rounded-full bg-stone-50 px-6 py-2.5 text-sm font-medium text-stone-800 transition hover:bg-white disabled:opacity-60"
+        >
+          {sharing ? "Preparing..." : "Share my flavor"}
+        </button>
       </section>
 
       <section className="grid grid-cols-1 gap-8 md:grid-cols-2">

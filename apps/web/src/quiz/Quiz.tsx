@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { QUESTIONS, type QuizOption } from "./questions.ts";
-import { Plate } from "./Plate.tsx";
+import { OptionImage } from "./OptionImage.tsx";
 
 export function Quiz({ onComplete }: { onComplete: (picks: QuizOption[]) => void }) {
   const [picks, setPicks] = useState<QuizOption[]>([]);
@@ -60,7 +60,7 @@ export function Quiz({ onComplete }: { onComplete: (picks: QuizOption[]) => void
             aria-label={`Option ${side + 1}`}
           >
             <div className="aspect-[4/3] w-full">
-              <Plate spec={option.plate} />
+              <OptionImage option={option} />
             </div>
             <span className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-sm font-semibold text-stone-700 shadow">
               {side + 1}

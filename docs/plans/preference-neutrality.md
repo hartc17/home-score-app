@@ -52,7 +52,7 @@ Add a Phase C test that identical observations run through two opposite-directio
 
 - [ ] Quiz has no option captions and no pole-naming center labels.
 - [ ] Every archetype reveal reads as flattering, audited explicitly.
-- [ ] Question bank supports a one-field SVG to photo swap, and the curation test is documented for the photo bank.
+- [x] Question bank supports a one-field SVG to photo swap (`QuizOption.photo`, rendered by `OptionImage`), and the curation test is documented for the photo bank.
 - [ ] Indifferent axes down-weight; directions come from consistency, never defaults.
 - [ ] Bias smoke test runs in CI and aggregate archetypes are roughly uniform.
 - [ ] Vision observations are identical across users for the same photos.

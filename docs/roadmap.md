@@ -8,7 +8,7 @@ This roadmap places them in context and enumerates the future phases and cross-c
 
 | Phase | Title | Status |
 |---|---|---|
-| A | Quiz to Rubric | Core built; photo bank pending |
+| A | Quiz to Rubric | Core + share card built; photo bank pending on licensing |
 | B | Gates + anonymous persistence + merge | Built; magic-link claim deferred |
 | C | Scoring service | Deterministic core built; live vision to build |
 | D | Persistence + comparison | Built; keyed by anonymous id |
@@ -40,13 +40,12 @@ flowchart TB
 
 ## Finishing the current phases
 
-### Phase A remainder: curated photo bank and share card
+### Phase A remainder: curated photo bank
 
-The quiz ships with SVG stand-in plates behind a one-field swap seam.
-The real instrument needs a curated photo bank that passes the curation test in [preference-neutrality.md](plans/preference-neutrality.md).
-The reveal also wants an image share-card export for virality.
+The reveal's image share-card export is built (`apps/web/src/quiz/shareCard.ts`): "Share my flavor" renders an Open-Graph-sized card of the archetype and its blend, using the Web Share API where available and falling back to a PNG download.
+The SVG-to-photo swap seam is also concrete now: each quiz option takes an optional `photo` URL, and `OptionImage` renders it in place of the SVG plate, so a curated photo drops in per option with no other code change.
+What remains is the curated photo bank itself: warm-and-cool option pairs, each shot at its most flattering, that pass the curation test in [preference-neutrality.md](plans/preference-neutrality.md).
 Dependency: none technical; needs photo sourcing and licensing.
-Size: medium, mostly content plus a small export path.
 
 ### Phase C remainder: live vision
 

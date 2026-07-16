@@ -12,7 +12,10 @@ export interface PlateSpec {
 
 export interface QuizOption {
   id: string;
+  // The SVG stand-in spec. When a curated photo lands, set `photo` and the
+  // renderer uses it instead: adding one field per option is the whole swap.
   plate: PlateSpec;
+  photo?: string;
   d: Partial<Record<AxisId, number>>;
   tags: Tag[];
 }
