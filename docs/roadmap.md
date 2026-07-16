@@ -10,7 +10,7 @@ This roadmap places them in context and enumerates the future phases and cross-c
 |---|---|---|
 | A | Quiz to Rubric | Core + share card + parametric illustration bank built |
 | B | Gates + anonymous persistence + merge | Built; magic-link claim deferred |
-| C | Scoring service | Deterministic core built; live vision to build |
+| C | Scoring service | Core + two-tier vision (resize + triage) built; live cost check needs a key |
 | D | Persistence + comparison | Built; keyed by anonymous id |
 | E | Accounts + magic-link claim | Not planned in detail |
 | F | Live vision + style-affinity | Not planned in detail |
@@ -55,9 +55,12 @@ What remains is validation rather than construction: the bias smoke test on real
 
 The deterministic core, the full style model, and the Claude vision analyzer are all built.
 `app/photos/vision.py` calls Claude vision with the section 7 prompt and parses the JSON into the observation schema, gated on `ANTHROPIC_API_KEY` with a stub fallback.
-What remains is production hardening rather than new capability: the cheap triage-model dedup pass and image resizing (section 8), a live cost and latency check on the two-tier split, and switching the analyzer call to async so the vision request does not block the event loop.
+
+The section 8 two-tier pass is now wired: `app/photos/images.py` resizes every photo to a ~1300px long edge (with a raw-URL fallback for an unfetchable or undecodable image), a cheap triage model classifies room types and dedups near-duplicate rooms when a listing has more photos than the cap, and the strong model runs the full pass on the deduplicated set.
+The event-loop concern is handled by keeping the routes synchronous, so FastAPI runs the blocking fetch and vision calls in a threadpool.
+
+What remains needs a real key rather than more code: a live cost and latency check on the two-tier split against actual listings.
 Dependency: an Anthropic API key to exercise the live path.
-Size: small.
 
 ### Phase D: persistence and comparison
 

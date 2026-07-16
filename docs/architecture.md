@@ -134,7 +134,9 @@ Extraction prefers schema.org JSON-LD, then Open Graph and meta tags, then a reg
 `POST /photos/analyze` takes the parsed facts.
 `app/photos/analyzer.py` returns preference-neutral observations and caches them by a photoset hash so re-scoring is free.
 The analyzer is a pluggable seam resolved at request time: `app/photos/vision.py` `ClaudeVisionAnalyzer` calls Claude vision with the [scoring-contract.md](scoring-contract.md) prompt and parses the JSON into the observation schema, gated on `ANTHROPIC_API_KEY`.
+The pass is two-tier (contract section 8): `app/photos/images.py` resizes every photo to a ~1300px long edge (falling back to the raw URL if an image cannot be fetched or decoded), a cheap triage model classifies room types and drops near-duplicate rooms when there are more photos than the cap, and the strong model then runs the full observation pass on the deduplicated set.
 Without a key the service falls back to a stub that flags `vision_unconfigured`, so the deterministic pipeline still runs.
+The routes stay synchronous so FastAPI runs the blocking fetch and vision calls in a threadpool rather than on the event loop.
 
 `POST /score` takes the rubric, the observations, and the facts.
 `app/scoring/engine.py` checks gates, computes a per-item match parameterized only by the rubric direction, aggregates each category as a weighted-average match, and normalizes across the assessed categories to a 0 to 100 total.

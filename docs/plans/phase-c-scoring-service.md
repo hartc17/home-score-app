@@ -119,9 +119,9 @@ Add a neutrality test that the same photo observations yield identical observati
 
 ## Risks and open decisions
 
-The authoritative observation schema and vision prompt live in `docs/scoring-contract.md`; the remaining analyze work is implementing the two-tier analyzer against it.
-Photo-selection logic for analysis is an open decision (all photos versus room-type-deduplicated, and the count cap).
-The two-tier model split (which model triages, which scores) needs concrete model ids and a cost and latency check.
+The authoritative observation schema and vision prompt live in `docs/scoring-contract.md`, and the two-tier analyzer is now built against it.
+Photo-selection is resolved: photos are prepared up to a raw cap of 24, and when that exceeds the analysis cap of 15 a triage pass keeps up to two photos per room type and backfills to the cap.
+The two-tier model split is resolved to `claude-haiku-4-5` for triage and `claude-opus-4-8` for analysis (both overridable by env), leaving only a live cost and latency check against real listings, which needs a key.
 Comps parseability varies by source, so the value stub must renormalize cleanly when comps are absent.
 Live listing pages change markup often, so parse should be resilient and fail loudly rather than silently returning empty facts.
 
@@ -129,7 +129,7 @@ Live listing pages change markup often, so parse should be resilient and fail lo
 
 - [x] `scoring-contract.md` authored, and its section 5 observation schema plus the style-affinity model committed to `packages/contracts`, the Pydantic models, and the engine (`scoring_config.json` style coordinates). Live vision is the remaining piece.
 - [x] Parse returns real facts and photo URLs from a pasted public page.
-- [x] Analyze is preference-neutral and cached by photoset hash, with the Claude vision analyzer built against `docs/scoring-contract.md` and gated on `ANTHROPIC_API_KEY` (stub fallback). Triage-model dedup, image resizing, and an async call remain as hardening.
+- [x] Analyze is preference-neutral and cached by photoset hash, with the Claude vision analyzer built against `docs/scoring-contract.md` and gated on `ANTHROPIC_API_KEY` (stub fallback). The two-tier pass is wired: photos resized to a ~1300px long edge (`app/photos/images.py`) and a cheap triage model dedups near-duplicate rooms before the strong analysis pass; blocking calls run in the threadpool via sync routes. A live cost/latency check still needs a real key.
 - [x] Engine normalizes using `rubric.category_weights`, not hardcoded budgets.
 - [x] Categorical match tables live in config, not code (`scoring_config.json`).
 - [x] Value category computed from facts via the documented stub with a reno seam.

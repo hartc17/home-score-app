@@ -5,6 +5,7 @@ import os
 from typing import Any
 
 from app.photos.analyzer import SCHEMA_VERSION
+from app.photos.images import Fetch, fetch_bytes, prepare_image
 from app.schemas import (
     ListingFacts,
     ListingObservations,
@@ -16,13 +17,21 @@ from app.scoring.config import get_config
 
 # The real Claude vision analyzer, implemented against docs/scoring-contract.md.
 # It is gated on ANTHROPIC_API_KEY: without a key the service falls back to the
-# stub (see app/photos/analyzer.resolve_analyzer). Photos are passed by URL and
-# capped in count; resizing to a ~1300px long edge and the cheap triage-model
-# dedup pass (contract section 8) are seams left for a follow-up.
+# stub (see app/photos/analyzer.resolve_analyzer). Analysis is two-tier: photos
+# are resized to a ~1300px long edge, a cheap triage model classifies room types
+# and drops near-duplicate rooms, then the strong model runs the full pass on the
+# deduplicated set (contract section 8).
 
 MAX_PHOTOS = 15
+PREP_CAP = 24
+PER_ROOM = 2
 DEFAULT_ANALYSIS_MODEL = "claude-opus-4-8"
 DEFAULT_TRIAGE_MODEL = "claude-haiku-4-5"
+
+TRIAGE_SYSTEM = (
+    "You sort real estate photos by the room they show. You never judge quality "
+    "or desirability. You return only the JSON object you are asked for."
+)
 
 SYSTEM_PROMPT = (
     "You are a real estate photo analyst. You report only what is visible in the "
@@ -90,6 +99,39 @@ def build_user_prompt(photo_count: int) -> str:
     )
 
 
+def build_triage_prompt(photo_count: int) -> str:
+    return (
+        f"Here are {photo_count} photographs of one listing, in order. "
+        'Return one JSON object {"rooms": ["<room_type>", ...]} with exactly one '
+        f"room_type per photo in the same order. Use these values: "
+        "living, kitchen, dining, bedroom, bathroom, exterior_front, exterior_rear, yard, other. "
+        "Return only the JSON object."
+    )
+
+
+def _dedup(images: list[dict[str, Any]], rooms: list[str], per_room: int, cap: int) -> list[dict[str, Any]]:
+    # Prefer a few strong photos per room type over many of the same room, then
+    # backfill with the remainder so the cap is still used.
+    selected: list[int] = []
+    counts: dict[str, int] = {}
+    for i, room in enumerate(rooms):
+        if counts.get(room, 0) >= per_room:
+            continue
+        counts[room] = counts.get(room, 0) + 1
+        selected.append(i)
+        if len(selected) >= cap:
+            break
+    if len(selected) < cap:
+        chosen = set(selected)
+        for i in range(len(images)):
+            if i in chosen:
+                continue
+            selected.append(i)
+            if len(selected) >= cap:
+                break
+    return [images[i] for i in sorted(selected)]
+
+
 def _extract_json(text: str) -> str:
     text = text.strip()
     if text.startswith("```"):
@@ -128,10 +170,14 @@ class ClaudeVisionAnalyzer:
         analysis_model: str | None = None,
         triage_model: str | None = None,
         client: Any | None = None,
+        fetch_image: Fetch = fetch_bytes,
+        enable_triage: bool = True,
     ) -> None:
         self.model = analysis_model or os.environ.get("HOUSEFLAVOR_VISION_MODEL", DEFAULT_ANALYSIS_MODEL)
         self.triage_model = triage_model or os.environ.get("HOUSEFLAVOR_TRIAGE_MODEL", DEFAULT_TRIAGE_MODEL)
         self._client = client
+        self._fetch_image = fetch_image
+        self.enable_triage = enable_triage
 
     @property
     def client(self) -> Any:
@@ -141,21 +187,39 @@ class ClaudeVisionAnalyzer:
             self._client = Anthropic()
         return self._client
 
-    def _select_photos(self, photo_urls: list[str]) -> list[str]:
-        # Cap count. The cheap triage-model pass that drops near-duplicate rooms
-        # (contract section 8) plugs in here.
-        return photo_urls[:MAX_PHOTOS]
+    def _triage_rooms(self, images: list[dict[str, Any]]) -> list[str]:
+        content: list[dict[str, Any]] = [*images, {"type": "text", "text": build_triage_prompt(len(images))}]
+        response = self.client.messages.create(
+            model=self.triage_model,
+            max_tokens=1024,
+            system=TRIAGE_SYSTEM,
+            messages=[{"role": "user", "content": content}],
+        )
+        text = "".join(b.text for b in response.content if getattr(b, "type", None) == "text")
+        try:
+            rooms = json.loads(_extract_json(text)).get("rooms", [])
+        except json.JSONDecodeError:
+            return []
+        return [str(r) for r in rooms] if isinstance(rooms, list) else []
+
+    def _select(self, images: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        # Only bother triaging when there is more than the cap to thin out; a
+        # small listing goes straight to the analysis pass.
+        if not self.enable_triage or len(images) <= MAX_PHOTOS:
+            return images[:MAX_PHOTOS]
+        rooms = self._triage_rooms(images)
+        if len(rooms) != len(images):
+            return images[:MAX_PHOTOS]
+        return _dedup(images, rooms, PER_ROOM, MAX_PHOTOS)
 
     def analyze(self, facts: ListingFacts) -> ListingObservations:
-        photos = self._select_photos(facts.photo_urls)
-        if not photos:
+        if not facts.photo_urls:
             return ListingObservations(
                 photos=[], flags=["no_photos"], model=self.model, schema_version=SCHEMA_VERSION
             )
-        content: list[dict[str, Any]] = [
-            {"type": "image", "source": {"type": "url", "url": url}} for url in photos
-        ]
-        content.append({"type": "text", "text": build_user_prompt(len(photos))})
+        prepared = [prepare_image(url, self._fetch_image) for url in facts.photo_urls[:PREP_CAP]]
+        images = self._select(prepared)
+        content: list[dict[str, Any]] = [*images, {"type": "text", "text": build_user_prompt(len(images))}]
         response = self.client.messages.create(
             model=self.model,
             max_tokens=16000,
