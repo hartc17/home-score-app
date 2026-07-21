@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import httpx
-import pytest
 from fastapi.testclient import TestClient
 
 from app.api.routes import listings

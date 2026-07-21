@@ -90,6 +90,8 @@ pytest services/scoring
 npm test --workspace=apps/web
 ```
 
+CI (`.github/workflows/ci.yml`) runs the Python lint and tests, the web typecheck, build, and tests, and builds both Docker images on every push and pull request.
+
 ## Phase status
 
 Detailed, actionable plans for each phase live in [docs/plans/](docs/plans/README.md).
