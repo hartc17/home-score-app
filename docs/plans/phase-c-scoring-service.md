@@ -133,6 +133,7 @@ Live listing pages change markup often, so parse should be resilient and fail lo
 - [x] Engine normalizes using `rubric.category_weights`, not hardcoded budgets.
 - [x] Categorical match tables live in config, not code (`scoring_config.json`).
 - [x] Value category computed from facts via the documented stub with a reno seam.
+- [x] Age category scored from `year_built` through configurable bands (excluded when unknown so it never caps the score), with a systems due-diligence prompt for older homes. Disclosed system ages are not yet parsed, so folding them in stays reserved.
 - [x] Confidence follows the frozen 0.5 threshold rule, feeding the due-diligence checklist with no silent value adjustment.
 - [x] A pasted URL returns a full score with a legible trace (deterministic chain proven in `test_scoring_pipeline.py`; live vision stubbed).
 - [x] Two different rubrics produce meaningfully different totals for the same listing.

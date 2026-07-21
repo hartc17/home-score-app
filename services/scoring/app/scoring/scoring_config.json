@@ -14,6 +14,15 @@
     [0.95, 0.85],
     [1.0, 0.7]
   ],
+  "reference_year": 2026,
+  "age_dd_threshold_years": 40,
+  "age_bands": [
+    [10, 0.95],
+    [25, 0.85],
+    [50, 0.7],
+    [80, 0.55],
+    [200, 0.4]
+  ],
   "item_category": {
     "ceiling_height": "bones",
     "natural_light": "bones",

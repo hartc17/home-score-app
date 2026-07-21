@@ -4,9 +4,10 @@ from app.schemas import ListingFacts, ListingObservations, ObservationItem, Rubr
 from app.schemas import ScoreResult
 from app.scoring.config import ScoringConfig, get_config
 
-# Categories scored from photo observations. `value` comes from facts (MVP stub);
-# `age` is deferred until a facts-based age model lands, so it is excluded from the
-# total rather than counted as zero (which would silently cap every score).
+# Categories scored from photo observations. `value` and `age` are fact-derived
+# and added separately: `value` from budget headroom (MVP stub), `age` from
+# `year_built`. Either is excluded from the total when its facts are missing,
+# rather than counted as zero, which would silently cap the score.
 OBSERVED_CATEGORIES = ["bones", "warmth", "finish", "outdoor"]
 
 
@@ -141,6 +142,21 @@ def _value_fraction(facts: ListingFacts, rubric: Rubric) -> float | None:
     return 0.5
 
 
+def _home_age(facts: ListingFacts, cfg: ScoringConfig) -> int | None:
+    if facts.year_built is None:
+        return None
+    # A year_built in the future (pre-construction or a typo) is treated as new
+    # rather than dropped, so new construction still scores.
+    return max(0, cfg.reference_year - facts.year_built)
+
+
+def _age_fraction(age: int, cfg: ScoringConfig) -> float:
+    for threshold, frac in cfg.age_bands:
+        if age <= threshold:
+            return frac
+    return cfg.age_bands[-1][1]
+
+
 def _verdict(total: float, cfg: ScoringConfig) -> str:
     for threshold, name in cfg.verdict_tiers:
         if total >= threshold:
@@ -253,6 +269,21 @@ def score(
         assessed += 1
         if facts.taxes_annual and facts.price and facts.taxes_annual / facts.price > cfg.tax_rate_flag:
             dd_items.append("Verify tax assessment: annual taxes look high relative to list price")
+
+    age = _home_age(facts, cfg)
+    if age is not None:
+        fraction = _age_fraction(age, cfg)
+        weight = weights.age
+        category_scores["age"] = round(fraction * weight, 2)
+        trace["age"] = f"{category_scores['age']:g} / {weight:g} (built {facts.year_built}, ~{age}y old)"
+        total_num += fraction * weight
+        total_den += weight
+        assessed += 1
+        if age >= cfg.age_dd_threshold_years:
+            dd_items.append(
+                f"Verify roof, HVAC, electrical, and plumbing: built in {facts.year_built} "
+                f"(~{age} years old), so major systems may be near end of life"
+            )
 
     total = round(100.0 * total_num / total_den, 2) if total_den > 0 else 0.0
 

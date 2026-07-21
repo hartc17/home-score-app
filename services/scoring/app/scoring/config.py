@@ -14,8 +14,11 @@ class ScoringConfig:
     unknown_match_default: float
     min_coverage_categories: int
     tax_rate_flag: float
+    reference_year: int
+    age_dd_threshold_years: float
     verdict_tiers: list[tuple[float, str]]
     value_bands: list[tuple[float, float]]
+    age_bands: list[tuple[float, float]]
     item_category: dict[str, str]
     continuous_items: set[str]
     always_higher_better: set[str]
@@ -36,8 +39,11 @@ def get_config() -> ScoringConfig:
         unknown_match_default=raw["unknown_match_default"],
         min_coverage_categories=raw["min_coverage_categories"],
         tax_rate_flag=raw["tax_rate_flag"],
+        reference_year=int(raw["reference_year"]),
+        age_dd_threshold_years=float(raw["age_dd_threshold_years"]),
         verdict_tiers=[(float(t), v) for t, v in raw["verdict_tiers"]],
         value_bands=[(float(a), float(b)) for a, b in raw["value_bands"]],
+        age_bands=[(float(a), float(b)) for a, b in raw["age_bands"]],
         item_category=raw["item_category"],
         continuous_items=set(raw["continuous_items"]),
         always_higher_better=set(raw["always_higher_better"]),

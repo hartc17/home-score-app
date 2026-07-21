@@ -190,7 +190,7 @@ A category fraction is the item-weight-weighted average of its item matches.
 Two rubrics with different directions or different category weights therefore produce different totals for the same observations.
 Confidence follows a single 0.5 threshold: a low-confidence finding is scored at its observed value and added to the due-diligence checklist, with no silent value adjustment.
 The value category is an MVP stub computed from budget headroom, with a seam for the reno estimator.
-The age category is deferred and excluded from the total rather than counted as zero.
+The age category is scored from `year_built` through configurable bands (a maintenance-risk proxy) and is excluded from the total only when `year_built` is unknown, so it never silently caps a score; older homes add a systems due-diligence prompt.
 Architectural and interior style are scored by style affinity: each style is a fixed point in a five-axis taste space, the buyer is a point derived from their rubric directions, and the match is their axis agreement (see [scoring-contract.md](scoring-contract.md) sections 4 and 6.3).
 Style coordinates live in `scoring_config.json`, so the vocabulary grows without code change.
 

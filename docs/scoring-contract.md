@@ -72,9 +72,10 @@ The `value` category is computed from facts only in the MVP.
 It reads budget headroom (`list_price / budget_max`) in bands, price versus comparable sales when comps are parseable, and a tax-assessment sanity flag.
 The reno estimator will later supply an all-in cost that replaces the headroom stub; the seam is reserved.
 
-The `age` category is reserved for a facts-based model over `year_built` and disclosed system ages (roof, HVAC, electrical, plumbing).
-Until that model exists it is excluded from the total rather than scored as zero, so it never silently caps a score.
-Disclosed or visible system concerns become due-diligence items regardless.
+The `age` category is a facts-based model over `year_built`: the home's age against a configurable reference year maps through configurable bands to a fraction, so a newer home scores higher on age (a maintenance-risk proxy, not a taste signal), and a future `year_built` is treated as new construction.
+It is excluded from the total when `year_built` is unknown, rather than scored as zero, so it never silently caps a score.
+A home past the configured age threshold gets a due-diligence prompt to verify roof, HVAC, electrical, and plumbing.
+Disclosed system ages are not yet parsed from listings, so folding them into the model (and any disclosed or visible system concerns) remains reserved.
 
 Location, the single largest driver of real value, enters as gates (districts) plus due-diligence prompts, not as a taste score, because desirability of a location is buyer-stated, not inferred from photos.
 
