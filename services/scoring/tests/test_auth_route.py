@@ -39,6 +39,19 @@ def test_full_magic_link_flow_claims_and_signs_in(client):
     assert me.json()["email"] == "buyer@example.com"
 
 
+def test_request_is_rate_limited_per_ip_across_emails(client):
+    # Distinct emails so the per-email limit never fires; the per-IP cap does.
+    # nginx appends the true peer to X-Forwarded-For, so the last entry wins.
+    headers = {"X-Forwarded-For": "203.0.113.9"}
+    for i in range(30):
+        resp = client.post("/auth/request", json={"email": f"u{i}@example.com"}, headers=headers)
+        assert resp.status_code == 200
+    assert client.post("/auth/request", json={"email": "u99@example.com"}, headers=headers).status_code == 429
+    # A different source address is unaffected.
+    other = {"X-Forwarded-For": "198.51.100.7"}
+    assert client.post("/auth/request", json={"email": "u99@example.com"}, headers=other).status_code == 200
+
+
 def test_request_is_rate_limited_per_email(client):
     for _ in range(5):
         assert client.post("/auth/request", json={"email": "buyer@example.com"}).status_code == 200

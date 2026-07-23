@@ -36,6 +36,11 @@ def client(db: Session) -> Iterator[TestClient]:
     def override() -> Iterator[Session]:
         yield db
 
+    # The per-IP limiter is process-local state; isolate it per test so every
+    # request in the suite (all from the same test client IP) starts fresh.
+    from app.api.routes.auth import ip_limiter
+
+    ip_limiter.reset()
     app.dependency_overrides[get_db] = override
     yield TestClient(app)
     app.dependency_overrides.clear()
