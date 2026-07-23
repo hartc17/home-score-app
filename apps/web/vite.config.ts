@@ -13,6 +13,7 @@ export default defineConfig({
       "/scores": backend,
       "/score": backend,
       "/auth": backend,
+      "/health": backend,
     },
   },
 });

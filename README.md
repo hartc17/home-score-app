@@ -61,6 +61,16 @@ Production configuration (`HOUSEFLAVOR_ENV=production`) fails closed on unsafe a
 
 Server-side fetches refuse URLs that resolve to non-public addresses (SSRF guard), which also blocks a listing served from localhost. To score a local test listing during development set `HOUSEFLAVOR_ALLOW_PRIVATE_FETCH=1`; the flag is ignored in production.
 
+`GET /health` reports whether the Claude vision path is wired, without making a billed API call:
+
+```bash
+curl -s http://localhost:8080/health
+# {"status":"ok","vision":"configured","analysis_model":"claude-opus-4-8"}   with ANTHROPIC_API_KEY set
+# {"status":"ok","vision":"unconfigured","analysis_model":"stub"}            on the stub
+```
+
+`configured` confirms the key is present and wired; scoring a real public listing confirms it is valid (a stub returns a 0 / weak score).
+
 ### Database
 
 ```bash
@@ -125,6 +135,7 @@ Preference neutrality is a cross-cutting hard requirement spanning phases A and 
 | POST | `/auth/verify` | Verify a magic-link token: claim the anonymous rubric onto the account (compose-forward when the email already has one) and return a signed session |
 | GET | `/auth/me` | The signed-in user and their latest rubric, from a `Bearer` session token |
 | POST | `/auth/signout` | Revoke every outstanding session for the signed-in user (bumps the user's session epoch) |
+| GET | `/health` | Liveness plus whether the Claude vision path is `configured` (key wired) or `unconfigured` (stub), without a billed API call |
 
 Tunable scoring tables and thresholds live in `services/scoring/app/scoring/scoring_config.json`, so tuning does not require a code change.
 See [docs/architecture.md](docs/architecture.md) for the full data flow and scoring math.

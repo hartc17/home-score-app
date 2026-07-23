@@ -182,6 +182,13 @@ class SignOutResponse(BaseModel):
     signed_out: bool
 
 
+class HealthResponse(BaseModel):
+    status: str
+    # "configured" once ANTHROPIC_API_KEY is wired, "unconfigured" on the stub.
+    vision: str
+    analysis_model: str
+
+
 class ScoredListing(BaseModel):
     listing_id: int
     url: str
