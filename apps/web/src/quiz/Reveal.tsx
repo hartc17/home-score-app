@@ -65,7 +65,7 @@ export function Reveal({
           ))}
         </div>
         <button
-          onClick={handleShare}
+          onClick={() => void handleShare()}
           disabled={sharing}
           className="mt-8 inline-flex items-center gap-2 rounded-full bg-stone-50 px-6 py-2.5 text-sm font-medium text-stone-800 transition hover:bg-white disabled:opacity-60"
         >

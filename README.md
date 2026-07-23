@@ -92,7 +92,8 @@ pytest services/scoring
 npm test --workspace=apps/web
 ```
 
-CI (`.github/workflows/ci.yml`) runs the Python lint and tests, the web typecheck, build, and tests, and builds both Docker images on every push and pull request.
+Both stacks are linted: Python with Ruff (`ruff check`, configured in `services/scoring/pyproject.toml`) and the web app with ESLint (`npm run lint --workspace=apps/web`, flat config with typescript-eslint type-checked rules plus react-hooks and jsx-a11y).
+CI (`.github/workflows/ci.yml`) runs both lints, the Python and web tests, the web typecheck and build, and builds both Docker images on every push and pull request.
 
 ## Phase status
 

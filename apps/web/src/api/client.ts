@@ -7,6 +7,12 @@ import type {
   SessionResponse,
 } from "@houseflavor/contracts";
 
+// `response.json()` is typed `any`; every call site knows the shape it expects,
+// so read it through one narrow-cast helper rather than casting at each call.
+async function readJson<T>(response: Response): Promise<T> {
+  return (await response.json()) as T;
+}
+
 // Best-effort server persistence. A missing or failing backend must never block
 // the quiz experience, so callers treat a null result as "kept locally only".
 export async function saveRubricToServer(anonId: string, rubric: Rubric): Promise<number | null> {
@@ -17,7 +23,7 @@ export async function saveRubricToServer(anonId: string, rubric: Rubric): Promis
       body: JSON.stringify({ anon_id: anonId, rubric }),
     });
     if (!response.ok) return null;
-    const body = await response.json();
+    const body = await readJson<{ version?: unknown }>(response);
     return typeof body.version === "number" ? body.version : null;
   } catch {
     return null;
@@ -33,16 +39,16 @@ export async function runScore(anonId: string, url: string): Promise<ScoreRunRes
     body: JSON.stringify({ anon_id: anonId, url }),
   });
   if (!response.ok) {
-    const detail = await response.json().catch(() => null);
+    const detail = (await response.json().catch(() => null)) as { detail?: string } | null;
     throw new ScoreError(detail?.detail ?? `Scoring failed (${response.status})`);
   }
-  return response.json();
+  return readJson<ScoreRunResponse>(response);
 }
 
 export async function listScores(anonId: string): Promise<ScoredListing[]> {
   const response = await fetch(`/scores/${encodeURIComponent(anonId)}`);
   if (!response.ok) return [];
-  return response.json();
+  return readJson<ScoredListing[]>(response);
 }
 
 export class AuthError extends Error {}
@@ -56,7 +62,7 @@ export async function requestMagicLink(email: string, anonId: string | null): Pr
   if (!response.ok) {
     throw new AuthError(response.status === 422 ? "Enter a valid email address" : "Could not send the link");
   }
-  return response.json();
+  return readJson<MagicLinkResponse>(response);
 }
 
 export async function verifyMagicLink(token: string): Promise<SessionResponse> {
@@ -66,13 +72,13 @@ export async function verifyMagicLink(token: string): Promise<SessionResponse> {
     body: JSON.stringify({ token }),
   });
   if (!response.ok) throw new AuthError("This sign-in link is invalid or has expired");
-  return response.json();
+  return readJson<SessionResponse>(response);
 }
 
 export async function fetchMe(session: string): Promise<MeResponse | null> {
   const response = await fetch("/auth/me", { headers: { Authorization: `Bearer ${session}` } });
   if (!response.ok) return null;
-  return response.json();
+  return readJson<MeResponse>(response);
 }
 
 // Best effort: revokes every outstanding token server-side, but local sign-out

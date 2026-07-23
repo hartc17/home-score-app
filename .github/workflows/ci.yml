@@ -33,6 +33,8 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci
+      - name: Lint
+        run: npm run lint --workspace=apps/web
       - name: Typecheck and build
         run: npm run build --workspace=apps/web
       - name: Test

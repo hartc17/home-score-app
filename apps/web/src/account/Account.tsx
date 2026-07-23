@@ -60,7 +60,7 @@ export function Account({
   }
 
   return (
-    <form onSubmit={submit} className="flex items-center gap-2">
+    <form onSubmit={(e) => void submit(e)} className="flex items-center gap-2">
       <input
         type="email"
         value={value}

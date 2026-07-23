@@ -24,8 +24,10 @@ export function Compare({ anonId, rubric, onBack }: { anonId: string; rubric: Ru
   }
 
   useEffect(() => {
-    // Make sure the rubric exists server-side before scoring against it. Mount-only.
-    saveRubricToServer(anonId, rubric).then(refresh);
+    // Make sure the rubric exists server-side before scoring against it. Mount-only:
+    // the anon id and rubric are stable for the life of this view.
+    void saveRubricToServer(anonId, rubric).then(refresh);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleScore() {
@@ -62,11 +64,13 @@ export function Compare({ anonId, rubric, onBack }: { anonId: string; rubric: Ru
           placeholder="https://..."
           aria-label="Listing URL"
           onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleScore()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void handleScore();
+          }}
           className="flex-1 rounded-lg border border-stone-300 px-3 py-2 focus:border-stone-500 focus:outline-none"
         />
         <button
-          onClick={handleScore}
+          onClick={() => void handleScore()}
           disabled={busy}
           className="rounded-lg bg-stone-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-stone-700 disabled:opacity-50"
         >
