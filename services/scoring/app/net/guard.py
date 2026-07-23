@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import ipaddress
+import os
 import socket
 from urllib.parse import urljoin, urlparse
 
 import anyio
 import httpx
+
+from app.settings import is_production
 
 # Server-side fetches take user-supplied URLs (pasted listings, photo links), so
 # they are an SSRF vector: a URL or a redirect can point at cloud metadata,
@@ -25,7 +28,15 @@ class UnsafeURLError(Exception):
     pass
 
 
+def _allow_private_fetch() -> bool:
+    # Dev-only escape hatch so a local test listing can be scored. Never honored
+    # in production, so it cannot be misconfigured into a fail-open.
+    return not is_production() and os.environ.get("HOUSEFLAVOR_ALLOW_PRIVATE_FETCH") == "1"
+
+
 def _ip_is_blocked(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    if _allow_private_fetch():
+        return False
     if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped is not None:
         ip = ip.ipv4_mapped
     return (

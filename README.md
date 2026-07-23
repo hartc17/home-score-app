@@ -59,6 +59,8 @@ The web dev server proxies `/rubrics`, `/listings`, `/photos`, `/score`, `/score
 
 Production configuration (`HOUSEFLAVOR_ENV=production`) fails closed on unsafe auth defaults: the service refuses to sign a session unless `HOUSEFLAVOR_SESSION_SECRET` is set to a non-default value, and `/auth/request` errors rather than returning a link unless a real mail provider (`RESEND_API_KEY`) is configured. In development both fall back to safe local defaults (a console sender that returns the link as `dev_link`).
 
+Server-side fetches refuse URLs that resolve to non-public addresses (SSRF guard), which also blocks a listing served from localhost. To score a local test listing during development set `HOUSEFLAVOR_ALLOW_PRIVATE_FETCH=1`; the flag is ignored in production.
+
 ### Database
 
 ```bash

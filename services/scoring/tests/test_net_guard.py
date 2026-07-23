@@ -57,6 +57,21 @@ def test_resolve_returns_validated_public_address(monkeypatch):
     assert resolve_public_address("http://example.com/listing") == "93.184.216.34"
 
 
+def test_dev_flag_allows_private_fetch_outside_production(monkeypatch):
+    monkeypatch.delenv("HOUSEFLAVOR_ENV", raising=False)
+    monkeypatch.setenv("HOUSEFLAVOR_ALLOW_PRIVATE_FETCH", "1")
+    monkeypatch.setattr(guard.socket, "getaddrinfo", _resolver({"localhost": "127.0.0.1"}))
+    assert resolve_public_address("http://localhost:8899/") == "127.0.0.1"
+
+
+def test_dev_flag_is_ignored_in_production(monkeypatch):
+    monkeypatch.setenv("HOUSEFLAVOR_ENV", "production")
+    monkeypatch.setenv("HOUSEFLAVOR_ALLOW_PRIVATE_FETCH", "1")
+    monkeypatch.setattr(guard.socket, "getaddrinfo", _resolver({"localhost": "127.0.0.1"}))
+    with pytest.raises(UnsafeURLError):
+        resolve_public_address("http://localhost:8899/")
+
+
 class _Transport(httpx.BaseTransport):
     def __init__(self, responses: list[httpx.Response]) -> None:
         self._responses = responses
