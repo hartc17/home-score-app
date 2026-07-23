@@ -41,6 +41,7 @@ export function Quiz({ onComplete }: { onComplete: (picks: QuizOption[]) => void
         <div
           className="h-1.5 w-full overflow-hidden rounded-full bg-stone-200"
           role="progressbar"
+          aria-label={`Question ${index + 1} of ${QUESTIONS.length}`}
           aria-valuenow={index}
           aria-valuemin={0}
           aria-valuemax={QUESTIONS.length}

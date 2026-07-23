@@ -31,7 +31,11 @@ export function Account({
   }
 
   if (status === "sent") {
-    return <p className="text-sm text-stone-500">Check your email for a sign-in link.</p>;
+    return (
+      <p role="status" className="text-sm text-stone-500">
+        Check your email for a sign-in link.
+      </p>
+    );
   }
 
   if (!open) {
@@ -72,7 +76,11 @@ export function Account({
       >
         {status === "sending" ? "Sending..." : "Send link"}
       </button>
-      {error && <span className="text-sm text-red-600">{error}</span>}
+      {error && (
+        <span role="alert" className="text-sm text-red-600">
+          {error}
+        </span>
+      )}
     </form>
   );
 }

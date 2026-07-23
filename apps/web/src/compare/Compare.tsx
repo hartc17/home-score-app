@@ -60,6 +60,7 @@ export function Compare({ anonId, rubric, onBack }: { anonId: string; rubric: Ru
           type="url"
           value={url}
           placeholder="https://..."
+          aria-label="Listing URL"
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleScore()}
           className="flex-1 rounded-lg border border-stone-300 px-3 py-2 focus:border-stone-500 focus:outline-none"
@@ -72,18 +73,24 @@ export function Compare({ anonId, rubric, onBack }: { anonId: string; rubric: Ru
           {busy ? "Scoring..." : "Score"}
         </button>
       </div>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-red-600">
+          {error}
+        </p>
+      )}
 
       {listings.length === 0 ? (
         <p className="mt-10 text-center text-stone-400">No scored listings yet.</p>
       ) : (
-        <ul className="mt-8 space-y-3">
+        <ol aria-label="Scored listings, ranked by score" className="mt-8 space-y-3">
           {listings.map((listing, i) => (
             <li
               key={listing.listing_id}
               className="flex items-center gap-4 rounded-xl border border-stone-200 bg-white px-4 py-3"
             >
-              <span className="w-6 text-center text-lg font-semibold text-stone-400">{i + 1}</span>
+              <span aria-hidden="true" className="w-6 text-center text-lg font-semibold text-stone-400">
+                {i + 1}
+              </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-stone-800">{listing.address ?? listing.url}</p>
                 <p className="text-sm text-stone-500">{priceLabel(listing.price)}</p>
@@ -98,7 +105,7 @@ export function Compare({ anonId, rubric, onBack }: { anonId: string; rubric: Ru
               <span className="w-12 text-right text-2xl font-bold text-stone-800">{Math.round(listing.total)}</span>
             </li>
           ))}
-        </ul>
+        </ol>
       )}
     </div>
   );

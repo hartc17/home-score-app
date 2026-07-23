@@ -122,7 +122,7 @@ The dependency audit found the Python runtime dependencies clean; the npm adviso
 The SSRF guard pins the validated resolved address for the actual connection (hostname kept in the Host header and TLS SNI), so the DNS-rebinding window is closed.
 Still open: the dev-tooling major upgrades that clear the npm advisories.
 - Performance and load: measure the vision path latency and the parse path resilience; add load testing before any launch.
-- Accessibility: audit the quiz and reveal for keyboard and screen-reader use; the forced-choice UI already supports keyboard, but the reveal and gates form need a full pass.
+- Accessibility: a pass is done across the quiz, reveal, gates, compare, and account surfaces. The quiz completes keyboard-only with a labeled progressbar; decorative bars on the reveal are hidden from the accessibility tree (their text carries the meaning); the comparison is a labeled ordered list with its input labeled; errors and sent-confirmations are live regions. Option images keep a deliberately neutral label per the neutrality requirement. A screen-reader usability session with a real user remains worthwhile before launch.
 - Progressive web app: offline-friendly quiz and installability, since the MVP is responsive web.
 
 ## Product and business backlog

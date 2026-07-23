@@ -86,7 +86,7 @@ export function Reveal({
                     <span className="capitalize">{poles.neg.replace(/_/g, " ")}</span>
                     <span className="capitalize">{poles.pos.replace(/_/g, " ")}</span>
                   </div>
-                  <div className="relative h-2 rounded-full bg-stone-100">
+                  <div className="relative h-2 rounded-full bg-stone-100" aria-hidden="true">
                     <div
                       className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-stone-800"
                       style={{ left: `calc(${((stat.signedStrength + 1) / 2) * 100}% - 8px)` }}
@@ -110,7 +110,7 @@ export function Reveal({
                   <span className="text-stone-700">{CATEGORY_LABEL[cat]}</span>
                   <span className="text-stone-500">{weight}</span>
                 </div>
-                <div className="h-2 rounded-full bg-stone-100">
+                <div className="h-2 rounded-full bg-stone-100" aria-hidden="true">
                   <div className="h-full rounded-full bg-stone-700" style={{ width: `${(weight / maxWeight) * 100}%` }} />
                 </div>
               </li>
