@@ -119,7 +119,8 @@ These are not phases; they are ongoing concerns that should land as the product 
 - Privacy and consent: capture the anonymous preference profile with clear consent from day one, and define retention and deletion, since the profile is a compounding data asset that must stay unencumbered.
 - Security review: a first pass is done. Phase E now fails closed in production on a missing or default session secret and a missing mail provider, and every server-side URL fetch goes through an SSRF guard (`app/net/guard.py`) that blocks non-public addresses and re-validates each redirect hop. `/auth/request` is rate limited per email (a sliding window of five links per fifteen minutes) and per source IP (thirty per hour, read from the proxy-appended `X-Forwarded-For`). Sign-out revokes sessions server-side by bumping the user's session epoch, which every issued token carries.
 The dependency audit found the Python runtime dependencies clean; the npm advisories are all in dev tooling (vite, vitest, postcss) that never ships in the production bundle.
-Still open: closing the DNS-rebinding window and the dev-tooling major upgrades that clear the npm advisories.
+The SSRF guard pins the validated resolved address for the actual connection (hostname kept in the Host header and TLS SNI), so the DNS-rebinding window is closed.
+Still open: the dev-tooling major upgrades that clear the npm advisories.
 - Performance and load: measure the vision path latency and the parse path resilience; add load testing before any launch.
 - Accessibility: audit the quiz and reveal for keyboard and screen-reader use; the forced-choice UI already supports keyboard, but the reveal and gates form need a full pass.
 - Progressive web app: offline-friendly quiz and installability, since the MVP is responsive web.

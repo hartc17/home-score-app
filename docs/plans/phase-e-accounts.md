@@ -63,4 +63,4 @@ A live email send needs a provider key.
 `/auth/request` is rate limited per email (five links per fifteen-minute sliding window, backed by the `login_tokens` timestamps) and per source IP (thirty per hour via an in-process sliding window, keyed by the last `X-Forwarded-For` entry, which nginx appends and a client cannot spoof).
 The IP limiter is process-local, which matches the single-worker deployment; a multi-worker deployment would move it to a shared store.
 Full multi-device anonymous-id reconciliation remains deferred.
-The SSRF exposure in the listing and photo fetch has since been closed by the `app/net/guard.py` public-URL guard (see the architecture doc); a residual DNS-rebinding window between validation and connection remains and is noted there.
+The SSRF exposure in the listing and photo fetch is closed by the `app/net/guard.py` public-URL guard, which also pins the validated resolved address for the connection, closing the DNS-rebinding window (see the architecture doc).

@@ -130,8 +130,9 @@ sequenceDiagram
 
 `POST /listings/parse` takes a pasted public URL.
 `app/api/routes/listings.py` fetches the page through an injectable `fetch_html`, then `app/listings/parser.py` extracts facts and photo URLs.
-Because the URL is user-supplied, every server-side fetch (listing pages and photos) goes through `app/net/guard.py`, which resolves the host and refuses any address that is loopback, link-local, private, reserved, or multicast, follows redirects manually so each hop is re-validated, and bounds the redirect count.
-This closes the SSRF vector where a pasted URL or a redirect points at cloud metadata or an internal host; a residual DNS-rebinding window between validation and connection is the known limitation, mitigated later by pinning the resolved address.
+Because the URL is user-supplied, every server-side fetch (listing pages and photos) goes through `app/net/guard.py`, which resolves the host once, refuses the URL if any returned address is loopback, link-local, private, reserved, or multicast, and then connects to the validated address itself, carrying the hostname in the Host header and TLS SNI so virtual hosting and certificate verification still work.
+Redirects are followed manually against the logical hostname URL, re-validated and re-pinned per hop, and bounded.
+This closes the SSRF vector where a pasted URL or a redirect points at cloud metadata or an internal host, including DNS rebinding: a resolver flip after validation has nothing to rebind because the connection never resolves the hostname again.
 Extraction prefers schema.org JSON-LD, then Open Graph and meta tags, then a regex pass over visible text.
 
 `POST /photos/analyze` takes the parsed facts.
