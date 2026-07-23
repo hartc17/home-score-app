@@ -178,6 +178,10 @@ class MeResponse(BaseModel):
     rubric: Rubric | None = None
 
 
+class SignOutResponse(BaseModel):
+    signed_out: bool
+
+
 class ScoredListing(BaseModel):
     listing_id: int
     url: str

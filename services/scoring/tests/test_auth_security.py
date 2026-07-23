@@ -23,14 +23,14 @@ def test_session_works_in_production_with_a_real_secret(monkeypatch):
     monkeypatch.setenv("HOUSEFLAVOR_ENV", "production")
     monkeypatch.setenv("HOUSEFLAVOR_SESSION_SECRET", "a-real-deployment-secret")
     token = issue_session(7, issued_at=1000.0)
-    assert read_session(token, now=1000.0) == 7
+    assert read_session(token, now=1000.0) == (7, 0)
 
 
 def test_session_uses_default_secret_in_development(monkeypatch):
     monkeypatch.delenv("HOUSEFLAVOR_ENV", raising=False)
     monkeypatch.delenv("HOUSEFLAVOR_SESSION_SECRET", raising=False)
     token = issue_session(7, issued_at=1000.0)
-    assert read_session(token, now=1000.0) == 7
+    assert read_session(token, now=1000.0) == (7, 0)
 
 
 def test_email_sender_raises_in_production_without_a_provider(monkeypatch):

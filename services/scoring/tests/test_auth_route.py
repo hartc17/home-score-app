@@ -59,3 +59,29 @@ def test_verify_is_single_use(client):
 def test_me_requires_a_valid_session(client):
     assert client.get("/auth/me").status_code == 401
     assert client.get("/auth/me", headers={"Authorization": "Bearer garbage"}).status_code == 401
+
+
+def _sign_in(client, email="buyer@example.com", anon_id="anon-1") -> str:
+    link = client.post("/auth/request", json={"email": email, "anon_id": anon_id}).json()["dev_link"]
+    return client.post("/auth/verify", json={"token": _token_from_dev_link(link)}).json()["session"]
+
+
+def test_signout_revokes_all_outstanding_sessions(client):
+    session = _sign_in(client)
+    headers = {"Authorization": f"Bearer {session}"}
+    assert client.get("/auth/me", headers=headers).status_code == 200
+
+    assert client.post("/auth/signout", headers=headers).status_code == 200
+    # The old token is now rejected server-side, not just dropped client-side.
+    assert client.get("/auth/me", headers=headers).status_code == 401
+
+
+def test_sign_in_after_signout_issues_a_working_session(client):
+    old = _sign_in(client)
+    client.post("/auth/signout", headers={"Authorization": f"Bearer {old}"})
+    fresh = _sign_in(client)
+    assert client.get("/auth/me", headers={"Authorization": f"Bearer {fresh}"}).status_code == 200
+
+
+def test_signout_requires_a_valid_session(client):
+    assert client.post("/auth/signout").status_code == 401

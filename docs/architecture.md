@@ -301,5 +301,6 @@ stateDiagram-v2
 Sign-in is passwordless (Phase E, `app/auth/`).
 `POST /auth/request` mints a one-time login token, stores only its hash in `login_tokens`, and emails the link through a pluggable sender (a real provider when `RESEND_API_KEY` is set, otherwise a console sender that returns the link as `dev_link` for local use).
 `POST /auth/verify` consumes the token and claims the account: with no prior account it sets `email` on the same anonymous `users` row, so the rubric is claimed with no migration; when the email already has an account it composes the device's latest rubric forward onto that account as a new version (`compose_forward`, keeping the fresh quiz taste and the account's gates).
-It returns a stateless signed session token (HMAC of the user id), which `GET /auth/me` verifies from a `Bearer` header.
+It returns a stateless signed session token (HMAC over the user id and the user's session epoch), which `GET /auth/me` verifies from a `Bearer` header.
+`POST /auth/signout` bumps the user's `session_epoch`, so every outstanding token (issued under the old epoch) is revoked server-side at once, not just dropped client-side.
 The `infra/docker-compose.yml` provisions Postgres, and the service auto-creates tables on startup for MVP (a migration tool replaces this when the schema stabilizes).

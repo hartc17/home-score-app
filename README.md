@@ -121,6 +121,7 @@ Preference neutrality is a cross-cutting hard requirement spanning phases A and 
 | POST | `/auth/request` | Email a one-time magic-link sign-in for an email + anon id. Uses a real provider when `RESEND_API_KEY` is set, else a console sender that returns the link as `dev_link` for local use |
 | POST | `/auth/verify` | Verify a magic-link token: claim the anonymous rubric onto the account (compose-forward when the email already has one) and return a signed session |
 | GET | `/auth/me` | The signed-in user and their latest rubric, from a `Bearer` session token |
+| POST | `/auth/signout` | Revoke every outstanding session for the signed-in user (bumps the user's session epoch) |
 
 Tunable scoring tables and thresholds live in `services/scoring/app/scoring/scoring_config.json`, so tuning does not require a code change.
 See [docs/architecture.md](docs/architecture.md) for the full data flow and scoring math.

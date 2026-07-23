@@ -17,7 +17,7 @@ import {
   type StoredSession,
 } from "./quiz/storage.ts";
 import { optionsByIds, type QuizOption } from "./quiz/questions.ts";
-import { saveRubricToServer, verifyMagicLink } from "./api/client.ts";
+import { saveRubricToServer, signOutServer, verifyMagicLink } from "./api/client.ts";
 
 type View = "reveal" | "gates" | "compare";
 
@@ -50,6 +50,7 @@ export default function App() {
   }, []);
 
   function signOut() {
+    if (session) void signOutServer(session.session);
     clearSession();
     setSession(null);
   }

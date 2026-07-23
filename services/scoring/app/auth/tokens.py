@@ -48,12 +48,12 @@ def _sign(payload: str) -> str:
     return _b64(hmac.new(_secret(), payload.encode(), hashlib.sha256).digest())
 
 
-def issue_session(user_id: int, issued_at: float) -> str:
-    payload = _b64(json.dumps({"uid": user_id, "iat": int(issued_at)}).encode())
+def issue_session(user_id: int, issued_at: float, epoch: int = 0) -> str:
+    payload = _b64(json.dumps({"uid": user_id, "iat": int(issued_at), "sep": epoch}).encode())
     return f"{payload}.{_sign(payload)}"
 
 
-def read_session(token: str, now: float, max_age: int = SESSION_MAX_AGE_SECONDS) -> int | None:
+def read_session(token: str, now: float, max_age: int = SESSION_MAX_AGE_SECONDS) -> tuple[int, int] | None:
     parts = token.split(".")
     if len(parts) != 2:
         return None
@@ -64,8 +64,8 @@ def read_session(token: str, now: float, max_age: int = SESSION_MAX_AGE_SECONDS)
         data = json.loads(_unb64(payload))
     except (ValueError, json.JSONDecodeError):
         return None
-    if not isinstance(data.get("uid"), int) or not isinstance(data.get("iat"), int):
+    if not all(isinstance(data.get(k), int) for k in ("uid", "iat", "sep")):
         return None
     if now - data["iat"] > max_age:
         return None
-    return data["uid"]
+    return data["uid"], data["sep"]

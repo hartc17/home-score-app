@@ -74,3 +74,13 @@ export async function fetchMe(session: string): Promise<MeResponse | null> {
   if (!response.ok) return null;
   return response.json();
 }
+
+// Best effort: revokes every outstanding token server-side, but local sign-out
+// proceeds even when the server is unreachable.
+export async function signOutServer(session: string): Promise<void> {
+  try {
+    await fetch("/auth/signout", { method: "POST", headers: { Authorization: `Bearer ${session}` } });
+  } catch {
+    // Local sign-out is the source of truth for this client.
+  }
+}

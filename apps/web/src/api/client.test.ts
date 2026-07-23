@@ -8,6 +8,7 @@ import {
   runScore,
   saveRubricToServer,
   ScoreError,
+  signOutServer,
   verifyMagicLink,
 } from "./client.ts";
 
@@ -133,5 +134,24 @@ describe("fetchMe", () => {
   it("test_returns_null_when_unauthorized", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
     expect(await fetchMe("s.tok")).toBeNull();
+  });
+});
+
+describe("signOutServer", () => {
+  it("test_posts_bearer_to_signout", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await signOutServer("s.tok");
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("/auth/signout");
+    expect(init.method).toBe("POST");
+    expect(init.headers.Authorization).toBe("Bearer s.tok");
+  });
+
+  it("test_swallows_network_failure", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+    await expect(signOutServer("s.tok")).resolves.toBeUndefined();
   });
 });

@@ -18,6 +18,7 @@ from app.schemas import (
     MagicLinkResponse,
     MeResponse,
     SessionResponse,
+    SignOutResponse,
     VerifyRequest,
 )
 
@@ -52,17 +53,31 @@ def verify(request: VerifyRequest, db: Session = Depends(get_db)) -> SessionResp
     return SessionResponse(
         email=user.email,
         anon_id=user.anon_id,
-        session=issue_session(user.id, now.timestamp()),
+        session=issue_session(user.id, now.timestamp(), user.session_epoch),
         rubric=latest_rubric_for_user(db, user),
         rubric_version=latest_version,
     )
 
 
+def _session_user(authorization: str | None, db: Session) -> User:
+    token = authorization[7:] if authorization and authorization.startswith("Bearer ") else None
+    claim = read_session(token, datetime.now(timezone.utc).timestamp()) if token else None
+    user = db.scalar(select(User).where(User.id == claim[0])) if claim is not None else None
+    # A token issued under an older epoch was revoked by a sign-out.
+    if user is None or user.email is None or claim[1] != user.session_epoch:
+        raise HTTPException(status_code=401, detail="not signed in")
+    return user
+
+
 @router.get("/me", response_model=MeResponse)
 def me(authorization: str | None = Header(default=None), db: Session = Depends(get_db)) -> MeResponse:
-    token = authorization[7:] if authorization and authorization.startswith("Bearer ") else None
-    user_id = read_session(token, datetime.now(timezone.utc).timestamp()) if token else None
-    user = db.scalar(select(User).where(User.id == user_id)) if user_id is not None else None
-    if user is None or user.email is None:
-        raise HTTPException(status_code=401, detail="not signed in")
+    user = _session_user(authorization, db)
     return MeResponse(email=user.email, anon_id=user.anon_id, rubric=latest_rubric_for_user(db, user))
+
+
+@router.post("/signout", response_model=SignOutResponse)
+def signout(authorization: str | None = Header(default=None), db: Session = Depends(get_db)) -> SignOutResponse:
+    user = _session_user(authorization, db)
+    user.session_epoch += 1
+    db.commit()
+    return SignOutResponse(signed_out=True)

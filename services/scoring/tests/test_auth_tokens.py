@@ -15,7 +15,12 @@ def test_new_login_token_hash_matches_hash_function():
 
 def test_session_round_trips_user_id():
     token = issue_session(42, issued_at=1000.0)
-    assert read_session(token, now=1000.0) == 42
+    assert read_session(token, now=1000.0) == (42, 0)
+
+
+def test_session_round_trips_epoch():
+    token = issue_session(42, issued_at=1000.0, epoch=3)
+    assert read_session(token, now=1000.0) == (42, 3)
 
 
 def test_session_rejects_tampered_payload():

@@ -28,8 +28,9 @@ A login token is a random one-time secret emailed as the magic link; only its SH
 Links expire after fifteen minutes, and there is one outstanding link per email: requesting a new one retires any prior unconsumed token.
 Verification consumes the token in a single use.
 
-A session token is stateless: an HMAC-SHA256 signature over the user id and issue time, keyed by `HOUSEFLAVOR_SESSION_SECRET`.
+A session token is stateless: an HMAC-SHA256 signature over the user id, issue time, and the user's session epoch, keyed by `HOUSEFLAVOR_SESSION_SECRET`.
 It is returned to the client as a bearer token and verified by `GET /auth/me`.
+`POST /auth/signout` bumps the user's session epoch, revoking every outstanding token server-side; the web client calls it best-effort on sign-out and clears local state regardless.
 A signed bearer token was chosen over a cookie because the frontend is a single-page app talking to a separate API origin.
 
 ### Claim and compose-forward

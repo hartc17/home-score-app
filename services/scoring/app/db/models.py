@@ -18,6 +18,9 @@ class User(Base):
     # on the same row, so an anonymous rubric is claimed without any migration.
     anon_id: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     email: Mapped[str | None] = mapped_column(String(320), unique=True, nullable=True)
+    # Bumped on sign-out; session tokens carry the epoch they were issued under,
+    # so bumping revokes every outstanding token server-side at once.
+    session_epoch: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     rubrics: Mapped[list[RubricRow]] = relationship(
